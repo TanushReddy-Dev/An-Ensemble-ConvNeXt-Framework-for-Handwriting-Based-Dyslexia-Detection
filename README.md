@@ -85,8 +85,8 @@ The system features a **FastAPI** backend powering a modern **React + Tailwind C
 
 ```bash
 # Clone the repository
-git clone https://github.com/Tanus/DyslexiaFinal.git
-cd DyslexiaFinal
+git clone https://github.com/santhoshkmr03/An-Ensemble-ConvNeXt-Framework-for-Handwriting-Based-Dyslexia-Detection.git
+cd An-Ensemble-ConvNeXt-Framework-for-Handwriting-Based-Dyslexia-Detection
 
 # Install pinned Python dependencies
 python -m pip install -r requirements.txt
@@ -94,6 +94,8 @@ python -m pip install -r requirements.txt
 # Start the FastAPI REST service
 uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload
 ```
+> **Note on Model Checkpoints**: PyTorch model weights (`.pt`) exceed GitHub's 100MB file limit and are gitignored. Place the 5-fold checkpoints (`convnext_fold0_best.pt` through `convnext_fold4_best.pt`) in `outputs/checkpoints/`. Weights can be produced directly using the included Google Colab notebook in `colab/Dyslexia_Screening_Colab.ipynb`.
+
 API documentation is interactively accessible at `http://127.0.0.1:8000/docs`.
 
 ### 2. Frontend Setup
@@ -111,6 +113,18 @@ Open `http://localhost:5173` in your browser. The frontend requires Supabase con
 `frontend/.env` for authentication and cross-device history; copy the variable names from
 `frontend/.env.example`. The API URL defaults to `http://127.0.0.1:8000` and can be overridden
 with `VITE_API_URL`.
+
+---
+
+## 📡 REST API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/screen` | Authoritative 5-fold ConvNeXt-Tiny + Attention MIL screening with Grad-CAM and Integrated Gradients overlays |
+| `POST` | `/api/v1/report` | Generates and exports a clinical screening PDF dossier (ReportLab) |
+| `POST` | `/predict` | UI compatibility endpoint returning classification, risk score, and attention overlays |
+| `GET` | `/health` | Compute diagnostics, loaded fold count, and device verification |
+| `GET` | `/docs` | Interactive Swagger UI API documentation and testing workbench |
 
 ### Submission package contents
 

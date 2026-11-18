@@ -4,12 +4,12 @@
 
 ---
 
-## Files in this Directory
+## Files & Resources
 
-| File | Description | Size |
+| Resource | Description | Location / Status |
 |---|---|---|
-| **`Dyslexia_Screening_Colab.ipynb`** | Complete, self-contained Google Colab notebook for training the 5-fold ConvNeXt-Tiny + Attention MIL model | ~175 KB |
-| **`dyslexia_screening_data.zip`** | Pre-audited clean handwriting dataset | ~84.7 MB |
+| **`Dyslexia_Screening_Colab.ipynb`** | Complete, self-contained Google Colab notebook for training the 5-fold ConvNeXt-Tiny + Attention MIL model | Located in this directory (`colab/`) |
+| **`dyslexia_screening_data.zip`** | Pre-audited clean handwriting dataset (~84.7 MB) | Uploaded to Google Drive root (`MyDrive/`) |
 
 ---
 
@@ -17,7 +17,7 @@
 
 ### Step 1: Upload the Dataset to Google Drive
 1. Open [Google Drive](https://drive.google.com).
-2. Upload **`colab/dyslexia_screening_data.zip`** directly to your **My Drive** root folder (`MyDrive/`).
+2. Upload **`dyslexia_screening_data.zip`** directly to your **My Drive** root folder (`MyDrive/`). *(Kept on Drive to adhere to repository size guidelines).*
 
 ---
 
