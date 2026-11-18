@@ -42,10 +42,21 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Restrict CORS to the documented local development frontend.
+# CORS configuration: allow local development and Vercel cloud deployments
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+]
+
+# Allow custom production frontends specified via environment variable
+if extra_origin := os.environ.get("FRONTEND_URL"):
+    ALLOWED_ORIGINS.append(extra_origin.rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=ALLOWED_ORIGINS if not os.environ.get("ALLOW_ALL_ORIGINS") else ["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
