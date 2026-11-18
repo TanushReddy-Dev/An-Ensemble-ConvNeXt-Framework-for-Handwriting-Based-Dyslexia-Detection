@@ -1,4 +1,65 @@
-"""Production Inference Engine for Handwriting-Based Dyslexia Screening.
+2026-11-18T16:56:23.178090614Z ==> Deploying...
+2026-11-18T16:56:23.401874891Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-11-18T16:58:49.259170225Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'
+2026-11-18T16:58:57.911287124Z ==> No open ports detected, continuing to scan...
+2026-11-18T16:58:58.280595046Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T16:59:59.83033689Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:00:00.229382447Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:00:20.842580196Z INFO:     Started server process [40]
+2026-11-18T17:00:20.842608338Z INFO:     Waiting for application startup.
+2026-11-18T17:00:20.843955673Z INFO:     Application startup complete.
+2026-11-18T17:00:20.844218113Z INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+2026-11-18T17:00:21.067432243Z INFO:     127.0.0.1:45546 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+2026-11-18T17:00:24.490387985Z ==> Your service is live 🎉
+2026-11-18T17:00:24.721439447Z ==> 
+2026-11-18T17:00:24.727867336Z ==> ///////////////////////////////////////////////////////////
+2026-11-18T17:00:24.742524838Z ==> 
+2026-11-18T17:00:24.744781868Z ==> Available at your primary URL https://neurowrite-backend.onrender.com
+2026-11-18T17:00:24.74687946Z ==> 
+2026-11-18T17:00:24.749269954Z ==> ///////////////////////////////////////////////////////////
+2026-11-18T17:04:44.576755616Z INFO:     223.228.102.72:0 - "GET /health HTTP/1.1" 200 OK
+2026-11-18T17:05:12.114343407Z INFO:     223.228.102.72:0 - "GET / HTTP/1.1" 200 OK
+2026-11-18T17:05:18.379001782Z INFO:     223.228.102.72:0 - "GET /health HTTP/1.1" 200 OK
+2026-11-18T17:05:23.543952919Z ==> Detected service running on port 10000
+2026-11-18T17:05:23.972201525Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:09:09.215200053Z INFO:     223.228.102.72:0 - "OPTIONS /api/v1/screen?backbone=convnext_tiny&input_mode=page&include_overlay_base64=true HTTP/1.1" 200 OK
+2026-11-18T17:09:28.433739068Z ==> Instance srv-dbutdl56e07s73ekjaog-spzhc restarted
+2026-11-18T17:09:34.411804163Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'
+2026-11-18T17:11:03.9154614Z INFO:     Started server process [41]
+2026-11-18T17:11:03.915535295Z INFO:     Waiting for application startup.
+2026-11-18T17:11:03.917636129Z INFO:     Application startup complete.
+2026-11-18T17:11:03.9179117Z INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+2026-11-18T17:12:09.402451664Z ==> Instance srv-dbutdl56e07s73ekjaog-spzhc restarted
+2026-11-18T17:12:16.685723549Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'
+2026-11-18T17:13:54.048939928Z INFO:     Started server process [40]
+2026-11-18T17:13:54.049966678Z INFO:     Waiting for application startup.
+2026-11-18T17:13:54.106668302Z INFO:     Application startup complete.
+2026-11-18T17:13:54.113605581Z INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+2026-11-18T17:20:26.54115846Z ==> Deploying...
+2026-11-18T17:20:26.822568016Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-11-18T17:21:06.263028668Z INFO:     223.228.102.72:0 - "OPTIONS /api/v1/screen?backbone=convnext_tiny&input_mode=page&include_overlay_base64=true HTTP/1.1" 200 OK
+2026-11-18T17:21:53.792195595Z ==> Instance srv-dbutdl56e07s73ekjaog-spzhc restarted
+2026-11-18T17:22:00.185219236Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'
+2026-11-18T17:22:46.324997688Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:22:46.708749636Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:22:49.370167838Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'
+2026-11-18T17:23:25.492652942Z INFO:     Started server process [40]
+2026-11-18T17:23:25.492698115Z INFO:     Waiting for application startup.
+2026-11-18T17:23:25.494184411Z INFO:     Application startup complete.
+2026-11-18T17:23:25.494205102Z INFO:     Uvicorn running on http://0.0.0.0:10000 (Press CTRL+C to quit)
+2026-11-18T17:23:48.339084788Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:23:48.725755843Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:24:37.106207917Z Deploy canceled
+2026-11-18T17:24:50.301934201Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:24:50.672887182Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:25:52.31340939Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:25:52.691459944Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:26:54.271244687Z ==> No open ports detected, continuing to scan...
+2026-11-18T17:26:54.7178601Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-11-18T17:27:16.179377205Z ==> Deploying...
+2026-11-18T17:27:16.434113005Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-11-18T17:28:16.98165738Z ==> Instance srv-dbutdl56e07s73ekjaog-spzhc restarted
+2026-11-18T17:28:26.566505302Z ==> Running 'uvicorn src.api:app --host 0.0.0.0 --port $PORT'"""Production Inference Engine for Handwriting-Based Dyslexia Screening.
 
 ⚠️ SCREENING TOOL ONLY: This software is strictly an experimental screening tool,
 NOT a diagnostic instrument. It provides risk estimations based on handwriting
@@ -310,6 +371,7 @@ class DyslexiaScreeningEngine:
 
         handle_f.remove()
         handle_b.remove()
+        primary_model.zero_grad(set_to_none=True)
 
         if not activations or not gradients:
             return Image.new("RGB", pil_img.size)
@@ -386,7 +448,7 @@ class DyslexiaScreeningEngine:
         page_tensor: torch.Tensor,
         mean_risk: float,
         max_crops: int = 60,
-        ig_steps: int = 3,
+        ig_steps: int = 1,
     ) -> Dict[str, Any]:
         """Compute pixel-level stroke Integrated Gradients from the PageModel ensemble,
         segment characters, and calculate stroke anomaly attribution density per character.
@@ -477,6 +539,8 @@ class DyslexiaScreeningEngine:
             step_logit.backward()
             if step_input.grad is not None:
                 accum_grads += step_input.grad
+            del step_input, step_logit
+            primary_model.zero_grad(set_to_none=True)
 
         avg_grads = (accum_grads / ig_steps).squeeze().detach().cpu().numpy()
         diff_np = diff_tensor.squeeze().detach().cpu().numpy()
