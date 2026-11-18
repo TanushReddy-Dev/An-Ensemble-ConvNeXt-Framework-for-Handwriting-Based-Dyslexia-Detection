@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { Mail, Lock, ArrowUpRight, ShieldCheck, WarningTriangle } from 'iconoir-react';
+import { Mail, Lock, ArrowUpRight, ShieldCheck, WarningTriangle, Refresh } from 'iconoir-react';
+import { supabase, isSupabaseConfigured } from '../utils/supabase';
 
 export default function Login() {
   const { login } = useAuth();
@@ -15,6 +16,7 @@ export default function Login() {
   const easeOut = [0.23, 1, 0.32, 1];
 
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -49,6 +51,30 @@ export default function Login() {
       addToast(msg, 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!email) {
+      addToast('Please enter your email address first.', 'warning');
+      return;
+    }
+    setResending(true);
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        const { error: resendErr } = await supabase.auth.resend({
+          type: 'signup',
+          email: email.trim(),
+        });
+        if (resendErr) throw resendErr;
+        addToast(`Verification email resent to ${email.trim()}! Please check your inbox and spam folder.`, 'success');
+      } else {
+        addToast('Supabase client is not configured.', 'error');
+      }
+    } catch (err) {
+      addToast(err.message || 'Failed to resend confirmation email.', 'error');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -217,17 +243,28 @@ export default function Login() {
                 <span className="text-on-surface-variant block">{error}</span>
 
                 {error.toLowerCase().includes('email not confirmed') && (
-                  <div className="mt-3 pt-2.5 border-t border-error/20 flex flex-col gap-2">
+                  <div className="mt-3 pt-2.5 border-t border-error/20 flex flex-col gap-2.5">
                     <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                      Supabase Cloud requires clicking the confirmation link sent to your inbox. You can either confirm via email, disable "Confirm email" in Supabase Auth settings, or continue instantly with a local session.
+                      Your account requires email confirmation. A verification link was sent to <strong className="text-on-surface font-semibold">{email || 'your email'}</strong>. Please check your inbox and spam folder.
                     </p>
-                    <button
-                      type="button"
-                      onClick={handleLocalBypass}
-                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs self-start"
-                    >
-                      Continue with Local Session →
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResendEmail}
+                        disabled={resending}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-on-secondary font-semibold text-xs hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                      >
+                        <Refresh size={14} className={resending ? 'animate-spin' : ''} />
+                        <span>{resending ? 'Resending…' : 'Resend Confirmation Email'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLocalBypass}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface font-semibold text-xs hover:bg-surface-container-highest transition-colors cursor-pointer border border-outline-variant/30"
+                      >
+                        <span>Local Session Bypass →</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

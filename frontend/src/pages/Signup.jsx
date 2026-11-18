@@ -12,6 +12,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [emailSent, setEmailSent] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', institution: '', password: '' });
 
   const handleSubmit = async (e) => {
@@ -21,11 +22,12 @@ export default function Signup() {
     try {
       const res = await register({ email: form.email, password: form.password, name: form.name, institution: form.institution });
       if (res?.requiresEmailConfirmation) {
-        addToast('Account created! Please check your email to confirm, or continue exploring.', 'info');
+        setEmailSent(true);
+        addToast('Verification link sent! Please check your email to activate your account.', 'info');
       } else {
         addToast('Account created successfully!', 'success');
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (err) {
       const msg = err.message || 'Registration failed. Please check your information.';
       setError(msg);
@@ -48,57 +50,80 @@ export default function Signup() {
         </div>
 
         <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl border border-outline-variant/40 shadow-sm">
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-error-container/20 border border-error/30 flex items-start gap-2.5 text-xs text-on-surface">
-              <WarningTriangle size={16} className="text-error shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="font-semibold text-error block">Registration Notice</span>
-                <span className="text-on-surface-variant">{error}</span>
+          {emailSent ? (
+            <div className="text-center py-4 space-y-4">
+              <div className="w-14 h-14 mx-auto rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+                <Mail size={28} />
+              </div>
+              <h3 className="text-xl font-semibold text-on-surface">Confirm your email address</h3>
+              <p className="text-sm text-on-surface-variant max-w-sm mx-auto leading-relaxed">
+                We've sent a verification link to <strong className="text-on-surface">{form.email}</strong>. Please check your inbox (and spam folder) and click the link to activate your account.
+              </p>
+              <div className="pt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
+                  <span>Go to Sign In</span>
+                  <ArrowRight size={16} />
+                </Link>
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              {error && (
+                <div className="mb-4 p-3 rounded-xl bg-error-container/20 border border-error/30 flex items-start gap-2.5 text-xs text-on-surface">
+                  <WarningTriangle size={16} className="text-error shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <span className="font-semibold text-error block">Registration Notice</span>
+                    <span className="text-on-surface-variant">{error}</span>
+                  </div>
+                </div>
+              )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Full Name"
-              type="text"
-              icon={User}
-              placeholder="Your Name"
-              value={form.name}
-              onChange={e => setForm({...form, name: e.target.value})}
-              required
-            />
-            <Input
-              label="Organization / School (Optional)"
-              type="text"
-              icon={City}
-              placeholder="School or Organization"
-              value={form.institution}
-              onChange={e => setForm({...form, institution: e.target.value})}
-            />
-            <Input
-              label="Email Address"
-              type="email"
-              icon={Mail}
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={e => setForm({...form, email: e.target.value})}
-              required
-            />
-            <Input
-              label="Password"
-              type="password"
-              icon={Lock}
-              placeholder="••••••••••••"
-              value={form.password}
-              onChange={e => setForm({...form, password: e.target.value})}
-              required
-            />
-            <Button type="submit" variant="primary" className="w-full py-2.5 mt-2" isLoading={loading}>
-              <span>Create account</span>
-              <ArrowRight size={16} />
-            </Button>
-          </form>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  label="Full Name"
+                  type="text"
+                  icon={User}
+                  placeholder="Your Name"
+                  value={form.name}
+                  onChange={e => setForm({...form, name: e.target.value})}
+                  required
+                />
+                <Input
+                  label="Organization / School (Optional)"
+                  type="text"
+                  icon={City}
+                  placeholder="School or Organization"
+                  value={form.institution}
+                  onChange={e => setForm({...form, institution: e.target.value})}
+                />
+                <Input
+                  label="Email Address"
+                  type="email"
+                  icon={Mail}
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={e => setForm({...form, email: e.target.value})}
+                  required
+                />
+                <Input
+                  label="Password"
+                  type="password"
+                  icon={Lock}
+                  placeholder="••••••••••••"
+                  value={form.password}
+                  onChange={e => setForm({...form, password: e.target.value})}
+                  required
+                />
+                <Button type="submit" variant="primary" className="w-full py-2.5 mt-2" isLoading={loading}>
+                  <span>Create account</span>
+                  <ArrowRight size={16} />
+                </Button>
+              </form>
+            </>
+          )}
         </div>
 
         <p className="text-center text-sm text-on-surface-variant mt-6">
