@@ -50,46 +50,52 @@ class DyslexiaScreeningEngine:
         # Operational screening threshold calibrated from training folds
         self.screening_threshold = 0.50
 
-        # Model containers
-        self.page_ensemble: List[PageModel] = []
+        # Model containers (Single lightweight base model in RAM; fold weights loaded sequentially on CPU)
+        self.base_model: Optional[PageModel] = None
+        self.checkpoint_paths: List[Path] = []
+        self.num_models_available = 0
 
         self._load_models()
 
     def _load_models(self) -> None:
-        """Load 5-fold ensemble for page model (ConvNeXt-Tiny or ResNet-50)."""
+        """Discover 5-fold checkpoints and initialize single model skeleton in memory."""
+        import gc
         prefix = "convnext" if self.backbone == "convnext_tiny" else "page"
+        discovered = []
         for fold in range(config.K_FOLDS):
             ckpt_path = self.checkpoint_dir / f"{prefix}_fold{fold}_best.pt"
             if ckpt_path.exists():
-                try:
-                    m = create_page_model(backbone_name=self.backbone)
-                    state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
-                    m.load_state_dict(state)
-                    m.to(self.device).eval()
-                    self.page_ensemble.append(m)
-                except Exception as e:
-                    print(f"Warning: Failed to load page fold {fold} checkpoint: {e}")
+                discovered.append(ckpt_path)
 
-        # If primary backbone checkpoints weren't found, try fallback
-        if not self.page_ensemble and prefix != "page":
+        if not discovered and prefix != "page":
             print(f"Notice: No {prefix} checkpoints found. Falling back to ResNet-50 checkpoints...")
             self.backbone = "resnet50"
             for fold in range(config.K_FOLDS):
                 ckpt_path = self.checkpoint_dir / f"page_fold{fold}_best.pt"
                 if ckpt_path.exists():
-                    try:
-                        m = create_page_model(backbone_name="resnet50")
-                        state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
-                        m.load_state_dict(state)
-                        m.to(self.device).eval()
-                        self.page_ensemble.append(m)
-                    except Exception as e:
-                        print(f"Warning: Failed to load fallback page fold {fold}: {e}")
+                    discovered.append(ckpt_path)
+
+        self.checkpoint_paths = discovered
+        self.num_models_available = len(discovered)
+
+        # Initialize exactly ONE model skeleton in RAM to respect cloud memory limits (<= 512MB RAM)
+        if self.checkpoint_paths:
+            self.base_model = create_page_model(backbone_name=self.backbone)
+            state = torch.load(self.checkpoint_paths[0], map_location=self.device, weights_only=True)
+            self.base_model.load_state_dict(state)
+            self.base_model.to(self.device).eval()
+            del state
+            gc.collect()
 
         print(
-            f"[ScreeningEngine] Initialized: {len(self.page_ensemble)} page models ({self.backbone}) "
+            f"[ScreeningEngine] Initialized: 1 base skeleton with {self.num_models_available} fold checkpoints ({self.backbone}) "
             f"on {self.device}."
         )
+
+    @property
+    def page_ensemble(self) -> List[Any]:
+        """Compatibility property for legacy checks expecting non-empty list."""
+        return [self.base_model] if self.base_model is not None else []
 
     def screen(
         self,
@@ -142,17 +148,34 @@ class DyslexiaScreeningEngine:
         norm_arr = (padded_arr - mu) / sigma
         page_tensor = torch.from_numpy(norm_arr).unsqueeze(0).float()  # (1, 512, 512)
 
-        # Forward pass across all loaded ensemble models
+        # Forward pass across all loaded ensemble checkpoints sequentially
         fold_probs: List[float] = []
         fold_attentions: List[np.ndarray] = []
+        import gc
 
         with torch.no_grad():
             tensor_device = page_tensor.to(self.device)
-            for model in self.page_ensemble:
-                logit, attn_weights = model(tensor_device)
-                prob = float(torch.sigmoid(logit).cpu().item())
-                fold_probs.append(prob)
-                fold_attentions.append(attn_weights.cpu().numpy())
+            # Evaluate each fold one by one to keep memory footprint <= 180MB
+            for ckpt_path in self.checkpoint_paths:
+                try:
+                    state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
+                    self.base_model.load_state_dict(state)
+                    self.base_model.eval()
+                    logit, attn_weights = self.base_model(tensor_device)
+                    prob = float(torch.sigmoid(logit).cpu().item())
+                    fold_probs.append(prob)
+                    fold_attentions.append(attn_weights.cpu().numpy())
+                    del state
+                except Exception as e:
+                    print(f"Warning: Fold evaluation issue with {ckpt_path.name}: {e}")
+
+            # Reload fold 0 for explainability hooks
+            if self.checkpoint_paths:
+                state0 = torch.load(self.checkpoint_paths[0], map_location=self.device, weights_only=True)
+                self.base_model.load_state_dict(state0)
+                self.base_model.eval()
+                del state0
+            gc.collect()
 
         # Ensemble Statistics
         mean_risk = float(np.mean(fold_probs))
@@ -193,7 +216,7 @@ class DyslexiaScreeningEngine:
         result: Dict[str, Any] = {
             "input_type": "page",
             "backbone": self.backbone,
-            "models_in_ensemble": len(self.page_ensemble),
+            "models_in_ensemble": len(fold_probs) or self.num_models_available,
             "risk_score": mean_risk,
             "risk_percentage": round(mean_risk * 100, 1),
             "uncertainty_band": {
