@@ -25,7 +25,7 @@ Audience, final visual identity, and deployment provider remain editable choices
 not blockers for planning. No new clinical claims or model changes are in scope.
 
 The user subsequently authorized implementation with Taste Skill, without Sites.
-The independent app and tests are now in this folder; no deployment is performed.
+The independent app, tests, and Vercel routing configuration are in this folder.
 
 ## 2. Repository findings
 
