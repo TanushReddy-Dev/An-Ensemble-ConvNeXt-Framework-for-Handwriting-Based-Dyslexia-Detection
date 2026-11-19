@@ -1,0 +1,266 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font:
+    15px/1.55 system-ui,
+    sans-serif;
+  color: #172030;
+  background: #f6f5f1;
+}
+button,
+a {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid #3454de;
+  outline-offset: 4px;
+}
+.studio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px clamp(18px, 4vw, 64px);
+  border-bottom: 1px solid #dcdedb;
+}
+.studio-head a {
+  font-size: 13px;
+}
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.identity i {
+  width: 20px;
+  height: 20px;
+  border: 2px solid;
+  border-radius: 50%;
+  position: relative;
+}
+.identity i::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  background: currentColor;
+  border-radius: 50%;
+}
+.identity span {
+  padding-left: 10px;
+  border-left: 1px solid #ccc;
+  color: #4f5a6a;
+  font-weight: 500;
+}
+.studio main {
+  max-width: 1680px;
+  margin: auto;
+  padding: 0 clamp(18px, 4vw, 64px) 48px;
+}
+.intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: clamp(28px, 5vw, 76px) 0 32px;
+}
+.intro h1 {
+  margin: 0;
+  font:
+    400 clamp(40px, 6.5vw, 96px)/0.94 Georgia,
+    serif;
+  letter-spacing: -0.065em;
+}
+.intro p {
+  max-width: 35ch;
+  margin: 0;
+  color: #4f5a6a;
+}
+.page-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px 0 14px;
+  border-bottom: 1px solid #d5d8d7;
+}
+.page-tabs button,
+.viewport button,
+.copy {
+  border: 0;
+  background: transparent;
+  color: #344052;
+  padding: 8px 12px;
+  min-height: 42px;
+  border-radius: 6px;
+}
+.page-tabs button[aria-current="page"],
+.viewport button[aria-pressed="true"] {
+  background: #162235;
+  color: #fff;
+}
+.studio-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 14px;
+}
+.studio-tools h2 {
+  font-size: 26px;
+  letter-spacing: -0.05em;
+  margin: 0;
+}
+.tools,
+.viewport {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.viewport,
+.copy {
+  border: 1px solid #cdd2d4;
+  border-radius: 8px;
+}
+.viewport {
+  padding: 3px;
+}
+.viewport button {
+  min-height: 34px;
+  padding: 4px 10px;
+}
+.copy {
+  margin-left: 6px;
+  background: #fff;
+}
+.copy span {
+  font-size: 12px;
+  border-radius: 20px;
+  background: #eef0f4;
+  padding: 2px 6px;
+  margin-left: 4px;
+}
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.option {
+  border: 1px solid #d7dbdb;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.option-head {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 16px;
+  min-height: 100px;
+}
+.option-head h3 {
+  font-size: 20px;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+.option-head p {
+  font-size: 13px;
+  color: #4f5a6a;
+  margin: 3px 0 0;
+  max-width: 40ch;
+}
+.swatch {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  flex: none;
+  margin-top: 7px;
+  background: #a78a56;
+}
+.option.signal .swatch {
+  background: #3a66f4;
+}
+.option.field .swatch {
+  background: #21725e;
+}
+.preview {
+  position: relative;
+  overflow: hidden;
+  background: #e9ebeb;
+  border-block: 1px solid #dce0df;
+  min-height: 100px;
+}
+.preview iframe {
+  display: block;
+  position: absolute;
+  top: 0;
+  border: 0;
+  transform-origin: top left;
+  background: #fff;
+}
+.option footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  flex-wrap: wrap;
+}
+.option footer button {
+  padding: 8px 14px;
+  border: 1px solid #b9c4cf;
+  border-radius: 7px;
+  background: white;
+  font-weight: 600;
+  color: #25354c;
+  min-height: 40px;
+}
+.option footer button[aria-pressed="true"] {
+  background: #192939;
+  color: #fff;
+  border-color: #192939;
+}
+.option footer a {
+  font-size: 13px;
+}
+#feedback {
+  min-height: 1.5em;
+}
+@media (max-width: 820px) {
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+  .intro {
+    align-items: start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option-head {
+    min-height: 0;
+  }
+  .option-grid[data-device="phone"] .preview {
+    max-width: 390px;
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+@media (max-width: 460px) {
+  .studio-head .identity span {
+    display: none;
+  }
+  .studio-tools {
+    flex-wrap: wrap;
+  }
+  .page-tabs button {
+    padding-inline: 9px;
+  }
+}
