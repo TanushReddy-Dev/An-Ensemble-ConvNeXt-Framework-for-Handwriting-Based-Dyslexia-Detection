@@ -108,6 +108,12 @@ compactNavigation.addEventListener("change", ({ matches }) => {
   redraw();
 });
 
+function focusDestination() {
+  root
+    .querySelector("#content:not(.workspace-error), .workspace-error h1")
+    ?.focus({ preventScroll: true });
+}
+
 function render() {
   const { pathname, search, hash } = useLocation();
   const route = pathname + search;
@@ -191,24 +197,20 @@ function render() {
     // Keep the previous route until there is an actual destination to reveal.
     if (pageContent) {
       if (pageChanged) {
-        const accountEntry =
-          renderedRoute === "/" && accountPaths.has(pathname);
-        revealPage(pageContent.closest(".auth-layout") || pageContent, {
-          accountEntry,
-        });
-        if (!changed) pageContent.focus({ preventScroll: true });
+        revealPage(pageContent.closest(".auth-layout") || pageContent);
+        if (!changed) focusDestination();
       }
       renderedRoute = route;
     }
     if (changed) {
       if (!hash) window.scrollTo(0, 0);
-      root.querySelector("#content")?.focus({ preventScroll: true });
+      focusDestination();
     }
   } catch {
     failedRoute = route;
     document.title = "Workspace unavailable | NeuroWrite AI";
     updateChildren(root, el(ErrorPage, { failed: true }));
-    root.querySelector("#content")?.focus({ preventScroll: true });
+    focusDestination();
   }
 }
 

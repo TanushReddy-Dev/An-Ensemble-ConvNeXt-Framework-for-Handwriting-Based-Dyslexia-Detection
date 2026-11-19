@@ -13,6 +13,14 @@ NeuroWrite AI uses the supplied teal and orange brain-and-pen mark on the landin
 account, workspace, and recovery screens and the PDF. It has a 32px PNG fallback
 and a 180px Apple touch icon. Page titles identify the active screen.
 
+The mark uses real transparency through the background and the pen's open areas.
+The navigation uses a compact crop around the brain and pen. Recovery screens
+use the full circuit emblem.
+The supplied artwork also informs the palette. Deep teal anchors action buttons
+and dark surfaces, while copper distinguishes the wordmark and error codes.
+The logo is brighter on dark surfaces and sits directly on the page color.
+Existing cobalt photography and screening outcome colors keep their existing roles.
+
 The workspace preview marks the image-selection step in the screening workflow.
 
 Pointer interactions use short press feedback and hover cues. Menus and the
@@ -37,7 +45,7 @@ Login uses an open notebook with a pen across the binding. Signup uses a blank
 notebook with loose ruled sheets and puts the form first on desktop. On phones both
 forms come first. The dashboard pairs a wide review desk still life with the three
 screening steps. Recovery and confirmation use a centered form without a photo.
-The authenticated pages share a navy navigation rail and a light working surface.
+The authenticated pages share a dark teal navigation rail and a light working surface.
 
 The landing, login, signup, and dashboard images each have their own composition.
 Responsive WebP variants and the landing share image live in

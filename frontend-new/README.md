@@ -123,6 +123,9 @@ to `public/assets/` remain unchanged; `public/taste-init.js` adapts their lifecy
 to the public route. No Sites integration or hosting tooling is used.
 The public overview is authored in `index.html` and is readable without JavaScript.
 Browser modules handle menus, navigation, and the signed-in workspace.
+Pointer navigation brings in the destination page with a short transition. The
+landing section links scroll to the section and focus its heading. Keyboard
+navigation and the system reduced-motion setting keep these moves immediate.
 `VITE_REQUEST_TIMEOUT_MS` optionally changes the inference/report timeout from its
 default of 600000 milliseconds.
 
@@ -148,8 +151,11 @@ When packaging FastAPI separately, include
 `frontend-new/public/assets/brand/neurowrite-mark.png` at the same relative path
 for the branded PDF header.
 
-The prototype is intentionally `noindex`. No approved legal text or canonical
-domain was supplied, so no fabricated policy pages/domain are published.
+Set `VITE_SITE_URL` to the public origin (for example, `https://neurowrite.example`)
+to emit a canonical landing URL and absolute social preview URLs. The build
+includes browser icons, an Apple touch icon, and a web app manifest. The
+prototype intentionally uses `noindex` pending approval of the public indexing
+and privacy policies.
 
 ## Manual Git handoff
 

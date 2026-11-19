@@ -1,4 +1,5 @@
 import { el, redraw } from "./view.js";
+import { scrollToSection } from "./motion.js";
 
 export function useLocation() {
   return {
@@ -57,6 +58,27 @@ export function bindNavigation() {
     const link = event.target.closest("a[href]");
     if (!link || link.target || link.hasAttribute("download")) return;
     const href = link.getAttribute("href");
+    if (
+      href === "/" &&
+      location.pathname === "/" &&
+      link.matches(".public-page .brand")
+    ) {
+      event.preventDefault();
+      if (location.hash || location.search) {
+        history.pushState(history.state, "", href);
+      }
+      scrollToSection(document.getElementById("top"), event.detail > 0);
+      return;
+    }
+    if (href.startsWith("#") && !link.classList.contains("skip-link")) {
+      const section = document.getElementById(href.slice(1));
+      if (section?.matches(".public-page main section")) {
+        event.preventDefault();
+        if (location.hash !== href) history.pushState(history.state, "", href);
+        scrollToSection(section, event.detail > 0);
+        return;
+      }
+    }
     if (!href.startsWith("/") || href.startsWith("//")) return;
     event.preventDefault();
     navigate(href);

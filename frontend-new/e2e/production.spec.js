@@ -12,6 +12,9 @@ test("the production landing page enhances cleanly and real routes open", async 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Handwriting screening for educators.",
   );
+  const mark = page.locator(".nav .brand-mark");
+  await expect(mark).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(mark).toHaveCSS("background-image", /neurowrite-symbol\.webp/);
   await page
     .getByRole("link", { name: "Sign in", exact: true })
     .first()
@@ -32,8 +35,10 @@ test("the production overview has useful content with JavaScript disabled", asyn
     for (const selector of [
       'link[rel="icon"][type="image/svg+xml"]',
       'link[rel="icon"][sizes="32x32"]',
+      'link[rel="icon"][href="/favicon.ico"]',
       'link[rel="apple-touch-icon"]',
       'meta[property="og:image"]',
+      'meta[name="twitter:image"]',
     ]) {
       const asset = page.locator(selector);
       const source = selector.startsWith("meta") ? "content" : "href";
@@ -42,6 +47,27 @@ test("the production overview has useful content with JavaScript disabled", asyn
       expect(
         (await page.request.get(new URL(path, page.url()).href)).ok(),
       ).toBe(true);
+    }
+    const manifestPath = await page
+      .locator('link[rel="manifest"]')
+      .getAttribute("href");
+    const manifest = await (
+      await page.request.get(new URL(manifestPath, page.url()).href)
+    ).json();
+    expect(manifest).toMatchObject({ name: "NeuroWrite AI", start_url: "/" });
+    expect(manifest.icons.map(({ sizes }) => sizes)).toEqual([
+      "192x192",
+      "512x512",
+    ]);
+    for (const icon of manifest.icons) {
+      const response = await page.request.get(
+        new URL(icon.src, page.url()).href,
+      );
+      expect(response.ok()).toBe(true);
+      const body = await response.body();
+      expect(`${body.readUInt32BE(16)}x${body.readUInt32BE(20)}`).toBe(
+        icon.sizes,
+      );
     }
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Handwriting screening for educators.",
@@ -125,7 +151,9 @@ test("the workspace offers recovery when a route render fails", async ({
   await expect(
     page.getByRole("button", { name: "Reload workspace" }),
   ).toBeVisible();
-  await expect(page.getByRole("main")).toBeFocused();
+  await expect(
+    page.getByRole("heading", { name: "The workspace could not open." }),
+  ).toBeFocused();
   await page.screenshot({ path: "shots/error-runtime-1280.png" });
   await page.getByRole("link", { name: "Back to overview" }).click();
   await expect(page).toHaveURL("http://127.0.0.1:5175/");

@@ -5,7 +5,7 @@ import { Brand } from "./Common.js";
 export default function ErrorPage({ failed = false }) {
   return el(
     "main",
-    { id: "content", className: "workspace-error", tabIndex: -1 },
+    { id: "content", className: "workspace-error" },
     el(Brand),
     el(
       "div",
@@ -17,7 +17,7 @@ export default function ErrorPage({ failed = false }) {
       ),
       el(
         "h1",
-        null,
+        { tabIndex: -1 },
         failed
           ? "The workspace could not open."
           : "This page isn't in the workspace.",
