@@ -17,6 +17,11 @@
 - Frontend browser suites use fixture services for authentication, screening, and
   persistence. Production tests cover the landing without JavaScript, working
   account navigation, branded standalone 404 and 500 documents, and render recovery.
+- The navigation tests sample intermediate scroll positions and confirm focus and
+  history after selecting a landing section. They also check the page transition,
+  sidebar indicator, and reduced-motion behavior. Production tests fetch the
+  browser icons, manifest, and social artwork. A separate test build with a
+  sample site origin emits canonical and absolute social preview URLs.
 
 ```powershell
 # From the repository root

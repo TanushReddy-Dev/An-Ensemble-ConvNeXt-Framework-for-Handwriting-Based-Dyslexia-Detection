@@ -58,7 +58,7 @@ async function upload(page) {
 }
 const browserErrors = new WeakMap();
 
-test("page fades and the sidebar highlight follow pointer navigation", async ({
+test("page transitions and the sidebar highlight follow pointer navigation", async ({
   page,
   isMobile,
 }) => {
@@ -97,6 +97,10 @@ test("page fades and the sidebar highlight follow pointer navigation", async ({
   expect(motion[0].frames[0].transform).not.toEqual(
     motion[0].frames[1].transform,
   );
+  expect(motion[1].frames[0]).toMatchObject({
+    opacity: 0.38,
+    transform: "translateY(0.5rem)",
+  });
   await page.screenshot({ path: "shots/sidebar-handoff-1280.png" });
   await page.evaluate(() => window.sidebarTransition.finish());
 
@@ -159,9 +163,11 @@ test("landing actions animate the actual destination on desktop and mobile", asy
   await expect(page).toHaveURL(/\/login$/);
   const progress = await page.locator(".auth-layout").evaluate((node) => ({
     transform: getComputedStyle(node).transform,
+    opacity: Number(getComputedStyle(node).opacity),
     state: history.state,
   }));
   expect(progress.transform).not.toBe("none");
+  expect(progress.opacity).toBeLessThan(0.8);
   expect(progress.state).toEqual({ from: "/upload" });
   await page.screenshot({
     path: `shots/landing-handoff-${page.viewportSize().width}.png`,
@@ -184,6 +190,70 @@ test("landing actions animate the actual destination on desktop and mobile", asy
   await expect(page).toHaveURL(/\/login$/);
   expect(await page.evaluate(() => window.accountTransitions.length)).toBe(2);
   await page.evaluate(() => window.accountTransitions[1].finish());
+});
+
+test("landing section links scroll, focus the section, and preserve browser history", async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() => {
+    // Record rendered scroll positions from the click, including intermediate frames.
+    const scrollIntoView = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (options) {
+      scrollIntoView.call(this, options);
+      if (this.id !== "workspace") return;
+      const positions = [scrollY];
+      window.sectionScroll = { positions, behavior: options.behavior };
+      function record() {
+        positions.push(scrollY);
+        if (positions.length < 60) requestAnimationFrame(record);
+      }
+      requestAnimationFrame(record);
+    };
+  });
+  const menu = page.getByRole("button", { name: "Open menu" });
+  if (isMobile) await menu.click();
+  const nav = () =>
+    page.getByRole("navigation", {
+      name: isMobile ? "Mobile navigation" : "Main navigation",
+    });
+  await nav().getByRole("link", { name: "Workspace" }).click();
+  await expect(page).toHaveURL(/#workspace$/);
+  await expect(page.locator("#workspace h2")).toBeFocused();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const top = document
+          .querySelector("#workspace")
+          .getBoundingClientRect().top;
+        const header = document.querySelector(".public-page header");
+        return Math.abs(top - header.getBoundingClientRect().bottom);
+      }),
+    )
+    .toBeLessThan(2);
+  expect(
+    await page.evaluate(() => new Set(window.sectionScroll.positions).size),
+  ).toBeGreaterThan(2);
+  await page.screenshot({
+    path: `shots/section-handoff-${page.viewportSize().width}.png`,
+  });
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  if (isMobile) await menu.click();
+  await nav().getByRole("link", { name: "Workspace" }).click();
+  await expect(page.locator("#workspace h2")).toBeFocused();
+  expect(await page.evaluate(() => window.sectionScroll.behavior)).toBe(
+    "instant",
+  );
+  await page.getByRole("link", { name: "NeuroWrite AI home" }).first().click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
 });
 test("screen once, retry save with same ID, view missing overlay, and download a PDF", async ({
   page,

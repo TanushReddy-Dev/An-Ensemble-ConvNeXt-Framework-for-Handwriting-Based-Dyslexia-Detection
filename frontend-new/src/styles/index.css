@@ -1,3 +1,11 @@
+:root {
+  --m-ease-page: cubic-bezier(0.22, 0.65, 0.32, 1);
+}
+
+.public-page main section[id] {
+  scroll-margin-top: var(--nav);
+}
+
 /* Base element defaults adapted from Tailwind CSS preflight (MIT). */
 @layer base {
   /*
@@ -428,18 +436,24 @@
   display: none;
 }
 :root {
+  --brand-teal: #075963;
+  --brand-copper: #a74420;
+  --brand-petrol: #10353b;
+  --brand-dark-line: #42696d;
+  --brand-dark-muted: #c7dddd;
+  --brand-dark-accent: #ffb691;
   --p-bg: #eef0f3;
   --p-surface: #e2e5ea;
   --p-ink: #0b0c0e;
   --p-muted: #5d6470;
-  --p-accent: #1f2de6;
+  --p-accent: var(--brand-teal);
   --p-accent-ink: #ffffff;
-  --p-action: #1f2de6;
+  --p-action: var(--brand-teal);
   --p-action-ink: #ffffff;
-  --p-inv-bg: #0b0c0e;
-  --p-inv-surface: #17181a;
+  --p-inv-bg: var(--brand-petrol);
+  --p-inv-surface: #184248;
   --p-inv-ink: #eef0f3;
-  --p-inv-muted: #8e8f92;
+  --p-inv-muted: var(--brand-dark-muted);
   --p-inv-accent: #eef0f3;
   --p-inv-accent-ink: #0b0c0e;
   --p-inv-action: #eef0f3;
@@ -607,18 +621,20 @@ select:focus-visible {
   min-height: 44px;
 }
 .brand-mark {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  background: #fff url("/assets/brand/neurowrite-mark.webp") center / contain
+  display: block;
+  inline-size: 36px;
+  block-size: 36px;
+  flex: none;
+  background: url("/assets/brand/neurowrite-symbol.webp") center / contain
     no-repeat;
-  border-radius: 6px;
-  flex-shrink: 0;
 }
 .brand-ai {
-  color: var(--p-muted);
-  font-weight: 400;
+  color: var(--brand-copper);
+  font-weight: 500;
+}
+.sidebar .brand-mark,
+.closing .brand-mark {
+  filter: brightness(2.2) saturate(0.85);
 }
 .btn {
   display: inline-flex;
@@ -971,8 +987,12 @@ select:focus-visible {
   font-weight: 500;
   margin-bottom: 24px;
 }
+.preview-wordmark .brand-mark {
+  inline-size: 24px;
+  block-size: 24px;
+}
 .preview-sidebar .selected {
-  background: #dce1ff;
+  background: #dcecea;
   color: var(--p-accent);
   border-radius: 8px;
 }
@@ -1148,7 +1168,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  border-top: 1px solid #31343a;
+  border-top: 1px solid var(--brand-dark-line);
   padding-top: 32px;
 }
 .closing-links nav {
@@ -1161,7 +1181,7 @@ select:focus-visible {
   color: #a2a7af;
 }
 .closing .brand-ai {
-  color: #a2a7af;
+  color: var(--brand-dark-accent);
 }
 /* Auth and application screens intentionally use natural task layouts. */
 .auth-page {
@@ -2305,9 +2325,8 @@ select:focus-visible {
     gap: 8px;
   }
   .public-page .nav .brand-mark {
-    width: 22px;
-    height: 22px;
-    border-width: 2px;
+    inline-size: 28px;
+    block-size: 28px;
   }
   .public-page .nav .brand-ai {
     display: none;
@@ -2607,8 +2626,8 @@ select:focus-visible {
     font-size: 15px;
   }
   .public-page .nav .brand-mark {
-    width: 18px;
-    height: 18px;
+    inline-size: 26px;
+    block-size: 26px;
   }
   .public-page .nav__actions .btn {
     font-size: 12px;
@@ -3141,8 +3160,8 @@ select:focus-visible {
   flex-direction: column;
   align-items: stretch;
   padding: 0;
-  border: 1px solid #203283;
-  background: #102061;
+  border: 1px solid var(--brand-dark-line);
+  background: var(--brand-petrol);
 }
 .specimen-toolbar {
   display: flex;
@@ -3155,7 +3174,7 @@ select:focus-visible {
 }
 .specimen-toolbar > :last-child {
   margin-inline-start: auto;
-  color: #d4dfff;
+  color: var(--brand-dark-muted);
   font-family: var(--font-mono);
   font-size: 12px;
 }
@@ -3236,12 +3255,12 @@ select:focus-visible {
   background: currentColor;
 }
 .public-page .app-frame {
-  background: #152358;
+  background: var(--brand-petrol);
 }
 .public-page .preview-window-bar {
-  color: #e1e7ff;
-  background: #172456;
-  border-color: #20326e;
+  color: var(--brand-dark-muted);
+  background: var(--brand-petrol);
+  border-color: var(--brand-dark-line);
 }
 .public-page .preview-sidebar {
   background: #eef1f9;
@@ -3252,10 +3271,10 @@ select:focus-visible {
 .public-page .explanation-frame {
   justify-content: center;
   gap: 32px;
-  background: #152358;
+  background: var(--brand-petrol);
 }
 .explanation-frame .explanation-note {
-  color: #e0e8ff;
+  color: var(--brand-dark-muted);
 }
 .review-diagram {
   display: grid;
@@ -3270,9 +3289,9 @@ select:focus-visible {
   width: min(100%, 270px);
   min-height: 64px;
   padding: 12px;
-  border: 1px solid #8498da;
+  border: 1px solid #789c9e;
   border-radius: 8px;
-  background: #253874;
+  background: #20565d;
   color: #fff;
   text-align: center;
 }
@@ -3280,14 +3299,14 @@ select:focus-visible {
   flex-shrink: 0;
 }
 .diagram-processor {
-  background: #e5ebff;
-  border-color: #e5ebff;
-  color: #142457;
+  background: #e0efed;
+  border-color: #e0efed;
+  color: var(--brand-petrol);
 }
 .diagram-connector {
   width: 1px;
   height: 32px;
-  background: #a3b5f3;
+  background: #a3bcba;
 }
 
 /* Photography and the form stay on separate surfaces. */
@@ -3301,7 +3320,7 @@ select:focus-visible {
   overflow: hidden;
   border-radius: 20px;
   color: #fff;
-  background: #152358;
+  background: var(--brand-petrol);
 }
 .auth-photo {
   position: relative;
@@ -3325,55 +3344,60 @@ select:focus-visible {
 }
 .auth-story-lead {
   max-width: 44ch;
-  color: #dbe4ff;
+  color: var(--brand-dark-muted);
   margin-bottom: 0;
 }
 .auth-signup .auth-story {
-  background: #1f2de6;
+  background: var(--brand-teal);
 }
 .auth-signup .auth-photo img {
   object-position: center 29%;
 }
 
-/* The workspace uses the same navy frame and light working surface. */
+/* The workspace uses the same dark teal frame and light working surface. */
 .app-shell {
   background: #f8f9fc;
 }
 .app-shell .sidebar {
-  background: #152358;
-  border-color: #283e7b;
+  background: var(--brand-petrol);
+  border-color: var(--brand-dark-line);
   color: #fff;
 }
-.sidebar .brand-ai,
 .sidebar .workspace-label small,
 .sidebar .sidebar-note,
 .sidebar .account-row small,
 .sidebar .signout {
-  color: #c5d2fa;
+  color: var(--brand-dark-muted);
 }
-.sidebar .workspace-avatar,
+.sidebar .brand-ai {
+  color: var(--brand-dark-accent);
+}
 .sidebar .account-row {
-  border-color: #5d72b4;
+  border-color: var(--brand-dark-line);
+}
+.sidebar .workspace-avatar {
+  border-color: var(--brand-dark-line);
+  color: var(--brand-dark-muted);
 }
 .sidebar .account-avatar {
-  background: #dbe4ff;
-  color: #152358;
+  background: #dcecea;
+  color: var(--brand-petrol);
 }
 .sidebar nav > a {
-  color: #dbe4ff;
+  color: var(--brand-dark-muted);
 }
 .sidebar nav > a:hover {
-  background: #243870;
+  background: #20484f;
 }
 .sidebar nav > a.active {
   color: #f3f6ff;
-  background: #314785;
+  background: #28575e;
 }
 .sidebar-indicator {
   position: absolute;
   inset: 0 0 auto;
   border-radius: 8px;
-  background: #314785;
+  background: #28575e;
   pointer-events: none;
 }
 .sidebar nav:has(.sidebar-indicator[data-positioned]) > a.active {
@@ -3383,7 +3407,7 @@ select:focus-visible {
   color: #fff;
 }
 .sidebar :focus-visible {
-  outline-color: #c5d2fa;
+  outline-color: #b8dfd9;
 }
 .app-shell .app-topbar {
   background: #f0f3fa;
@@ -3393,7 +3417,7 @@ select:focus-visible {
   gap: 0;
   padding: 0;
   overflow: hidden;
-  background: #152358;
+  background: var(--brand-petrol);
   color: #fff;
 }
 .overview-image {
@@ -3415,11 +3439,11 @@ select:focus-visible {
   padding: 16px 0;
 }
 .overview-steps li + li {
-  border-top: 1px solid #52669f;
+  border-top: 1px solid var(--brand-dark-line);
 }
 .overview-steps li > span,
 .overview-steps p {
-  color: #d5dfff;
+  color: var(--brand-dark-muted);
 }
 @media (min-width: 768px) {
   .auth-signup .auth-layout {

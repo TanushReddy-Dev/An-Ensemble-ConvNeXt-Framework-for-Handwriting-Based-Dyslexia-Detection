@@ -92,10 +92,11 @@ export default function AppLayout(page, compactNavigation) {
       el(
         "div",
         { className: "workspace-label" },
-        el("span", {
-          className: "brand-mark workspace-avatar",
-          "aria-hidden": "true",
-        }),
+        el(
+          "span",
+          { className: "workspace-avatar", "aria-hidden": "true" },
+          el(SquaresFour, { size: 17 }),
+        ),
         el(
           "div",
           null,

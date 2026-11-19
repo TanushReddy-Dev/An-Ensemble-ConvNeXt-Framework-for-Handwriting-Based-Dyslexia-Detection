@@ -1,5 +1,5 @@
 .workspace-error {
-  --recovery-ink: #152358;
+  --recovery-ink: var(--brand-petrol, #10353b);
   --recovery-text: #4b5365;
   box-sizing: border-box;
   display: grid;
@@ -20,13 +20,9 @@
   align-self: start;
 }
 
-.workspace-error:focus {
-  outline: none;
-}
-
 .workspace-error-code {
   margin: 0 0 16px;
-  color: #a54112;
+  color: var(--brand-copper, #a74420);
   font-weight: 600;
 }
 
@@ -58,8 +54,6 @@
   width: min(100%, 384px);
   height: auto;
   justify-self: end;
-  border: 1px solid #d4d9e4;
-  border-radius: 20px;
 }
 
 .static-error {
@@ -79,7 +73,13 @@
 }
 
 .static-error .brand img {
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+}
+
+.static-error .brand-ai {
+  color: var(--brand-copper, #a74420);
+  font-weight: 500;
 }
 
 .static-error .btn--primary {
@@ -89,13 +89,13 @@
   min-height: 44px;
   padding: 0 20px;
   border-radius: 8px;
-  background: #243ccc;
+  background: var(--brand-teal, #075963);
   color: #fff;
   text-decoration: none;
 }
 
 .static-error a:focus-visible {
-  outline: 2px solid #243ccc;
+  outline: 2px solid var(--brand-teal, #075963);
   outline-offset: 4px;
 }
 

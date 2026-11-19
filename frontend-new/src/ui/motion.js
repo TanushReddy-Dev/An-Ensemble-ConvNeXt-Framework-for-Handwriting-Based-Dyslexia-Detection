@@ -9,6 +9,12 @@ function settle() {
   active.clear();
 }
 
+function allowsMotion() {
+  return (
+    !preference.matches && document.documentElement.dataset.motion !== "off"
+  );
+}
+
 export function bindMotion() {
   document.addEventListener(
     "pointerdown",
@@ -29,14 +35,7 @@ export function bindMotion() {
 }
 
 function animate(element, frames, duration, curve = "--m-ease") {
-  if (
-    !element ||
-    !pointer ||
-    preference.matches ||
-    document.documentElement.dataset.motion === "off" ||
-    !element.animate
-  )
-    return;
+  if (!element || !pointer || !allowsMotion() || !element.animate) return;
   const easing = getComputedStyle(element).getPropertyValue(curve).trim();
   const animation = element.animate(frames, { duration, easing });
   active.add(animation);
@@ -48,7 +47,7 @@ function animate(element, frames, duration, curve = "--m-ease") {
 
 export function enterSurface(
   element,
-  { duration = 200, from = [], opacity = 0.82 } = {},
+  { duration = 200, from = [], opacity = 0.82, curve } = {},
 ) {
   const [start, end] = from;
   return animate(
@@ -58,21 +57,27 @@ export function enterSurface(
       { opacity: 1, ...(end && { transform: end }) },
     ],
     duration,
+    curve,
   );
 }
 
-export function revealPage(element, { accountEntry = false } = {}) {
+export function revealPage(element) {
   pageMotion?.cancel();
-  pageMotion = enterSurface(
-    element,
-    accountEntry
-      ? {
-          duration: 220,
-          opacity: 0.5,
-          from: ["translateY(0.375rem)", "translateY(0)"],
-        }
-      : { duration: 180, opacity: 0.76 },
-  );
+  pageMotion = enterSurface(element, {
+    duration: 250,
+    opacity: 0.38,
+    from: ["translateY(0.5rem)", "translateY(0)"],
+    curve: "--m-ease-page",
+  });
+}
+
+export function scrollToSection(section, pointerClick) {
+  const heading = section.querySelector("h1, h2") || section;
+  heading.tabIndex = -1;
+  heading.focus({ preventScroll: true });
+  const behavior = pointerClick && allowsMotion() ? "smooth" : "instant";
+  if (section.id === "top") window.scrollTo({ top: 0, behavior });
+  else section.scrollIntoView({ behavior, block: "start" });
 }
 
 function moveSidebarIndicator(root, before) {

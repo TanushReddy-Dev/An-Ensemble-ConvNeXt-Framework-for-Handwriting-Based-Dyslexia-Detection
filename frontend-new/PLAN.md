@@ -244,8 +244,9 @@ clinical trends. The letter-level IG endpoint exists but is deferred from this M
 
 ## 11. Configuration, hosting, and release dependencies
 
-Planned public environment variables: `VITE_API_URL`, `VITE_SUPABASE_URL`,
-`VITE_SUPABASE_ANON_KEY`. All VITE variables are browser-visible; never include
+Public environment variables include `VITE_API_URL`, `VITE_SUPABASE_URL`,
+`VITE_SUPABASE_ANON_KEY`, and the optional `VITE_SITE_URL` for canonical and
+social preview URLs. All VITE variables are browser-visible; never include
 service-role keys or private credentials. Use names compatible with the backend
 and document publishable-key migration separately if needed.
 
@@ -265,4 +266,7 @@ could export a saved result without rerunning the model.
 
 The independent frontend uses the authenticated screening API and branded PDF.
 The public overview is
-authored as static HTML; deployment still needs only static hosting.
+authored as static HTML; deployment still needs only static hosting. The static
+bundle includes browser and touch icons, web app metadata, and recovery pages.
+Pointer navigation animates between destinations and scrolls to landing
+sections. Keyboard navigation and reduced motion remain immediate.
