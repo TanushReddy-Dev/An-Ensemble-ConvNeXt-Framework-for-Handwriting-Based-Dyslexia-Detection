@@ -1,0 +1,20 @@
+{
+  "palettes": [
+    "cool-grey-cobalt"
+  ],
+  "types": [
+    "instrument"
+  ],
+  "dealt": [
+    "instrument",
+    "gabarito",
+    "geist"
+  ],
+  "moments": [
+    {
+      "id": "word-highlight",
+      "at": "2026-11-19T07:11:37.414Z",
+      "seed": "60ffe0ee"
+    }
+  ]
+}
