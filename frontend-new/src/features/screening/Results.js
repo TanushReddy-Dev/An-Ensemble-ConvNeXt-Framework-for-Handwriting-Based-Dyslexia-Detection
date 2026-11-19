@@ -11,6 +11,7 @@ import {
   Info,
   CheckCircle,
   FileImage,
+  MagnifyingGlass,
 } from "../../ui/icons.js";
 import {
   Busy,
@@ -25,8 +26,13 @@ import {
   message,
   percent,
   resultFromRecord,
+  screeningOutcome,
 } from "../../lib/contracts.js";
 import { detail, saveResult } from "../../lib/records.js";
+
+// The screening service uses this decision threshold for new and saved results.
+const SCREENING_THRESHOLD = 0.5;
+
 export default function CurrentResult() {
   const { state } = useWorkflow();
   if (state.file && !state.result)
@@ -140,7 +146,7 @@ function ResultView({
       id: "gradcam",
       title: "Grad-CAM",
       source: result.gradcam_overlay_base64,
-      info: "Shows image regions associated with the model output. Attribution is not clinical evidence.",
+      info: "Shading shows regions that increased the score in the first model fold. Strength is relative to this image.",
     },
     {
       id: "ig",
@@ -166,55 +172,73 @@ function ResultView({
       void cache.invalidateQueries({ queryKey: ["history", session.user.id] });
     },
   });
-  const elevated = categoryFor(result) === "Elevated";
+  const category = categoryFor(result);
+  const elevated = category === "Elevated";
+  const { low, high } = result.uncertainty_band;
+  const foldRange = `${percent(low * 100)} – ${percent(high * 100)}`;
+  const foldsDisagree =
+    low < SCREENING_THRESHOLD && high >= SCREENING_THRESHOLD;
   return el(
     fragment,
     null,
     el(
-      Link,
-      { className: "back-link", to: current ? "/upload" : "/history" },
-      el(ArrowLeft, { size: 16 }),
-      current ? "Back to image" : "Back to history",
-    ),
-    el(
-      PageTitle,
-      {
-        eyebrow: current ? "Screening complete" : "Saved screening",
-        title: title,
-        action: el(
-          Link,
-          {
-            className: "btn btn--secondary",
-            to: current
-              ? "/report"
-              : `/report?record=${encodeURIComponent(recordId)}`,
-          },
-          el(DownloadSimple, { size: 18 }),
-          "Generate report",
-        ),
-      },
-      date
-        ? new Date(date).toLocaleString()
-        : "Review the signal alongside the handwriting and model explanations.",
-    ),
-    el(
       "div",
-      { className: `classification ${elevated ? "elevated" : "typical"}` },
-      el("span", { className: "classification-icon" }, el(Info, { size: 24 })),
+      { className: "result-actions" },
+      el(
+        Link,
+        { className: "back-link", to: current ? "/upload" : "/history" },
+        el(ArrowLeft, { size: 16 }),
+        current ? "Back to image" : "Back to history",
+      ),
+      el(
+        Link,
+        {
+          className: "btn btn--secondary",
+          to: current
+            ? "/report"
+            : `/report?record=${encodeURIComponent(recordId)}`,
+        },
+        el(DownloadSimple, { size: 18 }),
+        "Generate report",
+      ),
+    ),
+    el(
+      "header",
+      { className: `result-overview ${elevated ? "elevated" : "typical"}` },
       el(
         "div",
-        null,
-        el("strong", null, result.screening_classification),
+        { className: "result-outcome" },
+        el(
+          "div",
+          { className: "outcome-label" },
+          el(elevated ? MagnifyingGlass : CheckCircle, { size: 22 }),
+          current ? "Screening complete" : "Saved screening",
+        ),
+        el("h1", null, screeningOutcome(category)),
         el(
           "p",
-          null,
-          "This is an experimental screening signal for professional review.",
+          { className: "outcome-interpretation" },
+          elevated
+            ? "The model flagged this sample for follow-up with a qualified professional."
+            : "The model found no elevated signal in this sample. This does not rule out dyslexia.",
         ),
       ),
       el(
-        "span",
-        { className: "tag" },
-        elevated ? "Elevated signal" : "Typical pattern",
+        "div",
+        { className: "score" },
+        el("p", { className: "score-label" }, "Model screening score"),
+        el("strong", null, percent(result.risk_percentage)),
+        el(
+          "p",
+          null,
+          "An experimental model score. Diagnosis requires a formal assessment.",
+        ),
+      ),
+      el(
+        "p",
+        { className: "outcome-sample" },
+        el("strong", null, title),
+        date && el("time", { dateTime: date }, new Date(date).toLocaleString()),
       ),
     ),
     el(
@@ -278,6 +302,38 @@ function ResultView({
                 hidden: tab !== view.id,
               },
               tab === view.id &&
+                view.id === "gradcam" &&
+                view.source &&
+                el(
+                  "div",
+                  { className: "gradcam-context" },
+                  el(
+                    "div",
+                    { className: "gradcam-legend" },
+                    el("strong", null, "Relative contribution"),
+                    el(
+                      "span",
+                      { className: "gradcam-scale" },
+                      "Lower",
+                      el("span", { "aria-hidden": "true" }),
+                      "Higher",
+                    ),
+                  ),
+                  foldsDisagree &&
+                    el(
+                      "p",
+                      { className: "small gradcam-disagreement" },
+                      el(Info, { size: 16 }),
+                      el(
+                        "span",
+                        null,
+                        el("strong", null, "Model folds disagreed"),
+                        " · ",
+                        foldRange,
+                      ),
+                    ),
+                ),
+              tab === view.id &&
                 el(
                   "div",
                   { className: "viewer-image" },
@@ -314,30 +370,12 @@ function ResultView({
       el(
         "aside",
         { className: "result-summary" },
-        el("h2", null, "Screening summary"),
-        el(
-          "div",
-          { className: "score" },
-          el("span", null, percent(result.risk_percentage)),
-          el("p", null, "Model screening score"),
-        ),
-        el(
-          "p",
-          { className: "small" },
-          "This score is a model signal, not the probability of a diagnosis.",
-        ),
+        el("h2", null, "Model details"),
         el(
           "div",
           { className: "fold-summary" },
           el("span", null, "Fold range"),
-          el(
-            "strong",
-            null,
-            percent(result.uncertainty_band.low * 100),
-            " \u2013",
-            " ",
-            percent(result.uncertainty_band.high * 100),
-          ),
+          el("strong", null, foldRange),
         ),
         el(
           "p",

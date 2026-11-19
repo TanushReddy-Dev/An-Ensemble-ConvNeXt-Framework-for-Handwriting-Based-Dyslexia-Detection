@@ -29,7 +29,14 @@ export function bindMotion() {
 }
 
 function animate(element, frames, duration, curve = "--m-ease") {
-  if (!element || !pointer || preference.matches || !element.animate) return;
+  if (
+    !element ||
+    !pointer ||
+    preference.matches ||
+    document.documentElement.dataset.motion === "off" ||
+    !element.animate
+  )
+    return;
   const easing = getComputedStyle(element).getPropertyValue(curve).trim();
   const animation = element.animate(frames, { duration, easing });
   active.add(animation);
@@ -54,9 +61,18 @@ export function enterSurface(
   );
 }
 
-export function revealPage(element) {
+export function revealPage(element, { accountEntry = false } = {}) {
   pageMotion?.cancel();
-  pageMotion = enterSurface(element, { duration: 150, opacity: 0.93 });
+  pageMotion = enterSurface(
+    element,
+    accountEntry
+      ? {
+          duration: 220,
+          opacity: 0.5,
+          from: ["translateY(0.375rem)", "translateY(0)"],
+        }
+      : { duration: 180, opacity: 0.76 },
+  );
 }
 
 function moveSidebarIndicator(root, before) {
@@ -107,20 +123,27 @@ export function captureMotionState(root) {
       ),
     ),
     image: root.querySelector(imageSelector)?.getAttribute("src"),
+    previewTab: root.querySelector('[role="tabpanel"]:not([hidden])')?.id,
   };
 }
 
-export function revealMotionState(root, before) {
+export function revealMotionState(root, before, pageChanged) {
   moveSidebarIndicator(root, before);
   if (!before.sidebarOpen) {
     enterSurface(root.querySelector(".sidebar.is-open"), { duration: 200 });
   }
+  if (pageChanged) return;
   for (const status of root.querySelectorAll(statusSelector)) {
     if (!before.statuses.has(status.textContent))
       enterSurface(status, { duration: 150 });
   }
-  const image = root.querySelector(imageSelector);
-  if (image && image.getAttribute("src") !== before.image) {
-    enterSurface(image, { duration: 150 });
+  const tab = root.querySelector('[role="tabpanel"]:not([hidden])');
+  if (tab && tab.id !== before.previewTab) {
+    enterSurface(tab, { duration: 150 });
+  } else {
+    const image = root.querySelector(imageSelector);
+    if (image && image.getAttribute("src") !== before.image) {
+      enterSurface(image, { duration: 150 });
+    }
   }
 }

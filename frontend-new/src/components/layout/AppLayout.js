@@ -26,12 +26,14 @@ const links = [
   { path: "/report", label: "Screening report", icon: FileText },
   { path: "/settings", label: "Settings", icon: SlidersHorizontal },
 ];
-export default function AppLayout(page) {
+export default function AppLayout(page, compactNavigation) {
   const { session, initializing, error, signOut } = useAuth();
   const location = useLocation();
-  const [menu, setMenu] = viewState("AppLayout:menu", false);
+  const [menuOpen, setMenu] = viewState("AppLayout:menu", false);
   const [signError, setSignError] = viewState("AppLayout:signError", "");
   const [signingOut, setSigningOut] = viewState("AppLayout:signingOut", false);
+  const menu = compactNavigation && menuOpen;
+  if (!compactNavigation && menuOpen) setMenu(false);
   if (initializing)
     return el(Loading, { text: "Restoring your session\u2026" });
   if (!session)

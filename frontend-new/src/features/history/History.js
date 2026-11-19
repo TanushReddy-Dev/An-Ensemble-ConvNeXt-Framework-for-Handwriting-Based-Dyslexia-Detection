@@ -8,7 +8,7 @@ import {
 } from "../../ui/icons.js";
 import { useAuth } from "../auth/AuthProvider.js";
 import { history, PAGE_SIZE } from "../../lib/records.js";
-import { message, percent } from "../../lib/contracts.js";
+import { message, percent, screeningOutcome } from "../../lib/contracts.js";
 import {
   ActionLink,
   ErrorNotice,
@@ -67,7 +67,7 @@ export default function History() {
       el(
         "label",
         { className: "filter-label", htmlFor: "category-filter" },
-        "Pattern",
+        "Result",
         el(
           "select",
           {
@@ -78,9 +78,9 @@ export default function History() {
               setPage(0);
             },
           },
-          el("option", { value: "" }, "All patterns"),
-          el("option", { value: "Elevated" }, "Elevated"),
-          el("option", { value: "Typical" }, "Typical"),
+          el("option", { value: "" }, "All results"),
+          el("option", { value: "Elevated" }, screeningOutcome("Elevated")),
+          el("option", { value: "Typical" }, screeningOutcome("Typical")),
         ),
       ),
     ),
@@ -151,7 +151,7 @@ export function RecordTable({ rows }) {
       "div",
       { className: "record-table-heading" },
       el("span", null, "Subject / image"),
-      el("span", null, "Pattern"),
+      el("span", null, "Result"),
       el("span", null, "Score"),
       el("span", null, "Date"),
       el("span", null),
@@ -175,7 +175,7 @@ export function RecordTable({ rows }) {
           {
             className: `tag ${row.category === "Elevated" ? "warning" : "neutral"}`,
           },
-          row.category,
+          screeningOutcome(row.category),
         ),
         el(
           "span",

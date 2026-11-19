@@ -147,25 +147,35 @@ def preprocess_page(path, dataset_name, augment_flag=False, rng=None):
     return tensor
 
 
-def extract_patches(page_tensor, patch_size=None, stride=None):
-    """Extract overlapping patches from a page tensor (1, H, W). Returns (N, 1, patch_size, patch_size)."""
+def page_patch_regions(height, width, patch_size=None, stride=None):
+    """Return patch bounds in model order, or the full page for a smaller input."""
     if patch_size is None:
         patch_size = config.PATCH_SIZE
     if stride is None:
         stride = config.PATCH_STRIDE
 
-    _, h, w = page_tensor.shape
+    regions = [
+        (y, x, y + patch_size, x + patch_size)
+        for y in range(0, height - patch_size + 1, stride)
+        for x in range(0, width - patch_size + 1, stride)
+    ]
+    return regions or [(0, 0, height, width)]
+
+
+def extract_patches(page_tensor, patch_size=None, stride=None):
+    """Extract overlapping patches from a page tensor (1, H, W)."""
+    if patch_size is None:
+        patch_size = config.PATCH_SIZE
+
+    _, height, width = page_tensor.shape
     patches = []
-    for y in range(0, h - patch_size + 1, stride):
-        for x in range(0, w - patch_size + 1, stride):
-            patch = page_tensor[:, y : y + patch_size, x : x + patch_size]
-            patches.append(patch)
-    if len(patches) == 0:
-        # Page smaller than patch size: resize the whole page as one patch
-        resized = torch.nn.functional.interpolate(
-            page_tensor.unsqueeze(0), size=(patch_size, patch_size), mode="bilinear", align_corners=False
-        ).squeeze(0)
-        patches.append(resized)
+    for top, left, bottom, right in page_patch_regions(height, width, patch_size, stride):
+        patch = page_tensor[:, top:bottom, left:right]
+        if patch.shape[-2:] != (patch_size, patch_size):
+            patch = torch.nn.functional.interpolate(
+                patch.unsqueeze(0), size=(patch_size, patch_size), mode="bilinear", align_corners=False
+            ).squeeze(0)
+        patches.append(patch)
     return torch.stack(patches)  # (N, 1, patch_size, patch_size)
 
 

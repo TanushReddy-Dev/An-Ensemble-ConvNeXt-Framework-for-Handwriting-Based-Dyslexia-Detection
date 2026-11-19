@@ -18,10 +18,15 @@ The workspace preview marks the image-selection step in the screening workflow.
 
 Pointer interactions use short press feedback and hover cues. Menus and the
 image dialog fade in from a pointer action. A newly selected image, processing
-status, or saved confirmation gets a brief opacity change. Pointer navigation
-fades the incoming page content while the sidebar highlight travels to the
-selected section. The sidebar, focus, and route change immediately. Keyboard
-actions and reduced-motion settings skip these effects.
+status, or saved confirmation gets a brief opacity change. From the landing
+page, the account layout fades and rises 6px over 220ms once the destination
+is ready, including after the sign-in redirect. Other page changes use a 180ms
+content fade, with the desktop sidebar highlight following the active section.
+The sidebar uses a darker blue highlight with light labels that stay readable
+as the highlight crosses the menu.
+Result tabs fade the selected panel, including when an overlay is unavailable.
+Navigation and focus stay immediate. Keyboard actions and reduced-motion
+settings skip these effects.
 
 The user asked for a more distinctive design. The split hero now pairs a large
 headline with a cobalt-framed handwriting specimen. The specimen is generated
@@ -235,21 +240,27 @@ They do not inherit marketing screen heights, word effects, or a large footer.
 | Home `/dashboard` | Header action, real saved-screening summary, recent records as rows. With no history, lead with the upload action. | Stacked content, simple labeled record rows; no compressed multi-column statistics. |
 | New screening | Page title above two columns: image selection/preview on the larger left; file information, optional identifier, notice, and Run screening on the right. | Instructions, file control, preview, then action in reading order. No fixed action overlapping content. |
 | Processing | Keep the actual preview in place; replace the action panel with indeterminate status, cancellation, and a plain slow-request message when needed. | Same content order. No invented stage names or progress percentages. |
-| Current result | Top classification and save status; large explanation viewer left, score and fold information right; report action available after completion. | Summary first, viewer next, fold table and actions below. No sideways tab overflow. |
+| Current result | Lead with a full-width outcome panel, with the score in a separate column. Follow with the viewer and model details. | Stack the outcome and score, then the viewer and model details. Wrap viewer tabs and keep the report action reachable. |
 | History | Search/filter toolbar, paginated metadata table, clear category words and dates. View record action on each row. | Labeled row summaries retain subject/date/category; pagination targets remain large. |
 | Saved detail | Same result composition, with date and saved identifier. Load image fields only when needed; show absent-image explanation honestly. | Summary before images; original unavailable state includes the report recovery action. |
 | Settings | Profile and reading preferences as clear form sections. Name/institution only; no fabricated roles or subscriptions. | One column, labels above inputs, preview of changed reading preference. |
 
 ### Result anatomy
 
-1. Classification uses the returned language with an explanatory screening label.
-2. Score uses a restrained number, never a giant success gauge or a pass/fail badge.
+1. The panel titles are “Potential dyslexia” and “Normal,” mapped from the
+   existing result category. Navy and muted teal distinguish the two appearances,
+   with a text explanation in each.
+2. The model score is labeled with its experimental context. Use a numeric
+   display without a gauge or pass/fail badge.
 3. Fold range is described in words, with an accessible table of actual fold scores.
-4. The viewer uses click-operated tabs: Original, Attention, Grad-CAM, Stroke attribution.
+4. The viewer uses keyboard- and pointer-operated tabs for Original, Grad-CAM,
+   and Stroke attribution.
    Missing views are visibly unavailable with a reason, never filled with a fallback
    image mislabeled as another method.
 5. A short explanation beside the viewer says what the selected method means.
-   Overlay colors are preserved from the backend, not recolored to the brand.
+   Grad-CAM uses a light cobalt overlay, a relative-strength legend, and a
+   note when fold scores span the screening threshold. The legend uses neutral
+   shading so it also works with older saved overlays.
 6. Save result is distinct from Generate report. After save succeeds, primary
    emphasis can move to the next useful action. Retry save never reruns screening.
 7. The returned screening disclaimer remains readable in the page, not only inside
@@ -292,6 +303,11 @@ status. Keep them next to the relevant control and announce status changes acces
   check overflow/tap spacing at 320px. Also test 200% text and long filenames.
 - Below the split breakpoint, stack text first and preserve complete controls.
   At text zoom or short viewport height, expand rather than crop or conceal content.
+- Check account and workspace routes at 320, 640, 768, 1024, and 1440px. On narrow
+  screens, keep the outcome and score together ahead of the filename, wrap
+  workflow steps, and size previews to the viewport height. The public menu scrolls
+  within the available space in phone landscape. Open compact navigation closes
+  when the viewport grows into the desktop layout.
 - Reading preferences adjust text size and line/word spacing in the app without
   claiming that a typeface treats dyslexia. Both color and geometry support focus.
 
