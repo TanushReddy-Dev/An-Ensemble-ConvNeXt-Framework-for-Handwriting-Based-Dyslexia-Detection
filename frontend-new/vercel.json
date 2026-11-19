@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/:page(login|signup|forgot-password|reset-password|dashboard|upload|processing|result|history|report|settings|app)",
+      "destination": "/index.html"
+    },
+    { "source": "/auth/callback", "destination": "/index.html" },
+    { "source": "/result/:id", "destination": "/index.html" },
+    {
+      "source": "/app/:page(history|settings)",
+      "destination": "/index.html"
+    },
+    { "source": "/app/screenings/:id", "destination": "/index.html" }
+  ]
+}

@@ -143,6 +143,13 @@ supported. Preserve the HTTP error status on those responses. A host with a
 catch-all SPA fallback uses the in-app error page for unknown routes when JavaScript
 loads. Both standalone pages work without JavaScript.
 
+For Vercel, select `frontend-new` as the project Root Directory, use the Vite
+preset, run `npm run build`, and publish `dist`. The checked-in `vercel.json`
+rewrites known routes to the app, including account callbacks and saved-result
+links. Vercel serves the bundled `404.html` with an HTTP 404 for unknown paths.
+After deployment, open `/login` directly and refresh it, then confirm an unknown
+path still returns HTTP 404.
+
 Set the browser variables before building, configure Supabase redirects, and
 set the API's `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `FRONTEND_URL`.
 Use HTTPS and set upload and request limits at the production ingress. The
@@ -159,9 +166,9 @@ and privacy policies.
 
 ## Manual Git handoff
 
-The assistant does not commit or push. Review the intended files and use a branch
-such as `codex/fresh-frontend`; exact commands are supplied at handoff. Keep local
-`.env`, dependencies, build output, browser profiles, and generated reports out of Git.
+Review and publish changes from a branch based on the latest `origin/main`.
+Keep local `.env`, dependencies, build output, browser profiles, and generated
+reports out of Git.
 The full copyable command sequence is in `GIT_COMMANDS.md`.
 
 ## Original page structure

@@ -40,6 +40,24 @@ covering the text-only FAQ, domain-specific headings, and the transparent app
 root. The checker reported 14 nonblocking warnings. See the
 [checker waivers](.taste-skill/waivers.json) for the scope of each exception.
 
+## Vercel deployment audit
+
+The deployed public landing, section navigation, sign-in, sign-up, and recovery
+forms were checked in a browser at desktop and mobile widths. The live Supabase
+endpoint rejected a synthetic invalid sign-in. The API health and screening CORS
+preflight returned HTTP 200 for the Vercel origin.
+The deployed favicons, manifest icons, and share image also returned HTTP 200.
+The HTML requests `noindex` and has relative share image URLs. Set
+`VITE_SITE_URL` in Vercel when the public origin is finalized.
+
+Direct requests for app routes returned HTTP 404, including the two account
+email destinations, `/auth/callback` and `/reset-password`. Client-side
+navigation from the landing page worked. The repository routing fix in
+`vercel.json` requires redeployment before these direct routes can be verified
+on Vercel. After redeployment, check a refreshed login and a signed-out direct
+workspace visit, test both email links with a QA account, and confirm an unknown
+path returns HTTP 404.
+
 ## Verification boundaries
 
 The local checks establish application and policy behavior for fixtures. The

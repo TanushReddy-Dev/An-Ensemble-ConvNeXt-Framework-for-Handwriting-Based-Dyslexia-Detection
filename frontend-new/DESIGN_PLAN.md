@@ -3,7 +3,7 @@ Deal: palette cool-grey-cobalt; type instrument; hero split; nav-centre; footer-
 
 # NeuroWrite AI frontend design plan
 
-Status: implemented, 19 November 2026. No commit, push, or deployment. See VERIFICATION.md.
+Status: implemented, 19 November 2026. See VERIFICATION.md for local and deployment checks.
 Companion: PLAN.md owns backend contracts, routes, state, and implementation phases.
 This document makes the visual and interaction decisions for those requirements.
 
