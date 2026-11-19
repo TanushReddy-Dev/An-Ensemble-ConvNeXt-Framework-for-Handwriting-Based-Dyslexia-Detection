@@ -14,11 +14,13 @@ import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
+from unicodedata import category as unicode_category
+from urllib.parse import quote
 
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, UploadFile, status
 import uuid
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
@@ -28,6 +30,7 @@ from PIL import Image
 import torch
 
 from src import config
+from src.auth import require_user
 from src.report_generator import generate_screening_pdf
 from src.screening_engine import DISCLAIMER_TEXT, DyslexiaScreeningEngine
 
@@ -105,7 +108,7 @@ def health_check() -> Dict[str, Any]:
     }
 
 
-@app.post("/api/v1/screen", tags=["Screening"])
+@app.post("/api/v1/screen", tags=["Screening"], dependencies=[Depends(require_user)])
 async def screen_handwriting(
     file: UploadFile = File(..., description="Handwriting image file (PNG, JPG, JPEG)"),
     backbone: str = Query("convnext_tiny", description="Neural backbone ('convnext_tiny' or 'resnet50')"),
@@ -199,7 +202,7 @@ async def screen_handwriting(
 # Neurowrite AI Compatibility Endpoints (Powering frontend_)
 # ─────────────────────────────────────────────────────────────────────────────
 
-@app.post("/predict", tags=["Neurowrite Frontend"])
+@app.post("/predict", tags=["Neurowrite Frontend"], dependencies=[Depends(require_user)])
 async def predict_compatibility(
     file: UploadFile = File(..., description="Handwriting image file (PNG, JPG, JPEG)"),
 ) -> Dict[str, Any]:
@@ -279,7 +282,7 @@ async def predict_compatibility(
     }
 
 
-@app.post("/api/v1/report", tags=["Screening"])
+@app.post("/api/v1/report", tags=["Screening"], dependencies=[Depends(require_user)])
 async def generate_screening_report(
     file: UploadFile = File(..., description="Handwriting image file (PNG, JPG, JPEG)"),
     student_id: str = Form("Anonymous Student", description="Student identifier for report"),
@@ -287,7 +290,7 @@ async def generate_screening_report(
     backbone: str = Form("convnext_tiny", description="Neural backbone ('convnext_tiny' or 'resnet50')"),
     input_mode: str = Form("page", description="Analysis mode: 'page' (Full-page / sentence handwriting specimen)"),
 ) -> Response:
-    """Screen an image and immediately return a downloadable clinical PDF report."""
+    """Screen an image and return a downloadable experimental screening summary."""
     try:
         contents = await file.read()
         pil_img = Image.open(io.BytesIO(contents)).convert("RGB")
@@ -314,15 +317,20 @@ async def generate_screening_report(
         examiner_name=examiner_name,
     )
 
-    filename = f"Screening_Report_{student_id.replace(' ', '_')}.pdf"
+    safe_id = "".join(
+        char if char.isalnum() or unicode_category(char).startswith("M") or char in "._-" else "_"
+        for char in student_id
+    ).strip("._-")[:60]
+    filename = f"NeuroWrite-{safe_id or 'Screening'}.pdf"
+    disposition = f"attachment; filename=\"NeuroWrite-Screening.pdf\"; filename*=UTF-8''{quote(filename, safe='')}"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
-@app.post("/api/v1/screen-letters-ig", tags=["Screening"])
+@app.post("/api/v1/screen-letters-ig", tags=["Screening"], dependencies=[Depends(require_user)])
 async def screen_fullpage_letters_ig(
     file: UploadFile = File(..., description="Full-page handwriting image (PNG, JPG, JPEG)"),
     max_crops: int = Query(60, description="Maximum character crops to segment and analyze"),
@@ -384,11 +392,6 @@ async def screen_fullpage_letters_ig(
 
     return response_data
 
-
-# Mount static sample assets
-samples_dir = Path(__file__).resolve().parent.parent / "data" / "samples"
-if samples_dir.exists():
-    app.mount("/data/samples", StaticFiles(directory=str(samples_dir)), name="samples")
 
 # Mount compiled JS frontend if dist exists
 frontend_dist = Path(__file__).resolve().parent.parent / "frontend" / "dist"

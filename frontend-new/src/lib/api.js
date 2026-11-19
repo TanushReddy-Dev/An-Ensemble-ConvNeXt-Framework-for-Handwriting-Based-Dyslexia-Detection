@@ -83,7 +83,11 @@ export async function report(file, student, examiner, backbone) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `NeuroWrite-${student.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 60) || "screening"}.pdf`;
+  const safeId = student
+    .replace(/[^\p{L}\p{M}\p{N}_.-]+/gu, "_")
+    .replace(/^[._-]+|[._-]+$/g, "")
+    .slice(0, 60);
+  link.download = `NeuroWrite-${safeId || "screening"}.pdf`;
   document.body.append(link);
   link.click();
   link.remove();

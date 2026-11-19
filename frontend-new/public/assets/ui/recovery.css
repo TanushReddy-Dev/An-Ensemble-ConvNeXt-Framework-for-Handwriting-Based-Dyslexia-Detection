@@ -1,0 +1,114 @@
+.workspace-error {
+  --recovery-ink: #152358;
+  --recovery-text: #4b5365;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px clamp(32px, 7vw, 112px);
+  width: min(100% - 48px, 1120px);
+  margin: 0 auto;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: 32px 0 72px;
+  color: var(--recovery-ink);
+}
+
+.workspace-error > .brand {
+  grid-column: 1 / -1;
+  justify-self: start;
+  align-self: start;
+}
+
+.workspace-error:focus {
+  outline: none;
+}
+
+.workspace-error-code {
+  margin: 0 0 16px;
+  color: #a54112;
+  font-weight: 600;
+}
+
+.workspace-error h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.workspace-error-body > p:not(:first-child) {
+  max-width: 42ch;
+  margin: 0 0 28px;
+  color: var(--recovery-text);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+.workspace-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.workspace-error-art {
+  box-sizing: border-box;
+  display: block;
+  width: min(100%, 384px);
+  height: auto;
+  justify-self: end;
+  border: 1px solid #d4d9e4;
+  border-radius: 20px;
+}
+
+.static-error {
+  margin: 0;
+  background: #f1f3f6;
+  font-family: system-ui, sans-serif;
+}
+
+.static-error .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.static-error .brand img {
+  border-radius: 6px;
+}
+
+.static-error .btn--primary {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: #243ccc;
+  color: #fff;
+  text-decoration: none;
+}
+
+.static-error a:focus-visible {
+  outline: 2px solid #243ccc;
+  outline-offset: 4px;
+}
+
+@media (max-width: 639px) {
+  .workspace-error {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 32px;
+    padding: 16px 0 40px;
+  }
+
+  .workspace-error-art {
+    width: min(100%, 200px);
+    justify-self: start;
+  }
+}

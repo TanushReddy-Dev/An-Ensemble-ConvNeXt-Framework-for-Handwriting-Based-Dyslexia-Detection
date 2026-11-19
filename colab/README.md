@@ -9,7 +9,7 @@
 | Resource | Description | Location / Status |
 |---|---|---|
 | **`Dyslexia_Screening_Colab.ipynb`** | Complete, self-contained Google Colab notebook for training the 5-fold ConvNeXt-Tiny + Attention MIL model | Located in this directory (`colab/`) |
-| **`dyslexia_screening_data.zip`** | Pre-audited clean handwriting dataset (~84.7 MB) | Uploaded to Google Drive root (`MyDrive/`) |
+| **`dyslexia_screening_data.zip`** | Separately supplied dataset archive | Place an approved copy in your Google Drive root (`MyDrive/`) |
 
 ---
 
@@ -35,8 +35,10 @@
 1. Click **Runtime -> Run all** (or step through cell by cell).
 2. The notebook will:
    - Mount Google Drive and unpack the dataset.
-   - Run 5-fold grouped cross-validation without writer leakage.
-   - Train and evaluate the **ConvNeXt-Tiny + Attention MIL** page ensemble.
+   - Run grouped cross-validation using the writer identifiers or grouping proxies
+     available in the dataset. Writer identity is unavailable for some samples.
+   - Train the base models, then train and evaluate **ConvNeXt-Tiny + Attention MIL**
+     in the comparative ablation section.
    - Compute Integrated Gradients stroke attribution maps and Grad-CAM class activation heatmaps.
    - Export 5-fold model weights: `convnext_fold{0..4}_best.pt`.
 
@@ -52,4 +54,14 @@ outputs/checkpoints/
   convnext_fold3_best.pt
   convnext_fold4_best.pt
 ```
-The FastAPI backend (`src/api.py`) automatically discovers and loads these weights on startup.
+FastAPI looks for these weights on the first inference request for a model
+backbone. The health endpoint can respond before they load.
+
+The checked-in notebook holds the training source cells. To assemble a fresh
+copy while preserving those cells, run from the repository root:
+
+```powershell
+python colab/build_notebook.py --output "$env:TEMP/NeuroWrite_Colab.ipynb"
+```
+
+The builder also uses `colab/run_comparative_ablation.py` for the benchmark cell.

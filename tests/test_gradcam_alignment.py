@@ -8,33 +8,11 @@ import pytest
 import torch
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw
-from torch import nn
 
-from src import config, preprocess
+from src import config
+from src.auth import require_user
 from src.screening_engine import DyslexiaScreeningEngine
-
-
-class PatchModel(nn.Module):
-    """Make the logit depend on one patch's central activation."""
-
-    def __init__(self, index=-1, gain=1.0, bias=0.0):
-        super().__init__()
-        self.index = index
-        self.gain = nn.Parameter(torch.tensor(gain))
-        self.bias = bias
-        self.encoder = nn.Module()
-        self.encoder.backbone = nn.Module()
-        self.encoder.backbone.features = nn.Sequential(*[nn.Identity() for _ in range(8)])
-
-    def forward(self, page):
-        patches = preprocess.extract_patches(page)
-        features = torch.nn.functional.adaptive_avg_pool2d(patches, 7)
-        center = torch.zeros_like(features)
-        center[:, :, 3, 3] = 1
-        activations = self.encoder.backbone.features(features * center)
-        logit = activations[self.index].mean() * self.gain + self.bias
-        attention = torch.full((len(patches),), 1.0 / len(patches), device=page.device)
-        return logit.reshape(1), attention
+from synthetic_models import PatchModel
 
 
 @pytest.fixture
@@ -121,6 +99,7 @@ def test_screen_api_returns_the_ensemble_overlay_and_average_score(engine, monke
 
     engine.page_ensemble = [PatchModel(index=0, bias=-0.8), PatchModel(bias=1.4)]
     monkeypatch.setattr(api, "get_engine_instance", lambda backbone: engine)
+    monkeypatch.setitem(api.app.dependency_overrides, require_user, lambda: None)
     original = Image.new("RGB", (512, 384), "white")
     ImageDraw.Draw(original).rectangle((15, 50, 45, 100), fill="black")
     data = io.BytesIO()

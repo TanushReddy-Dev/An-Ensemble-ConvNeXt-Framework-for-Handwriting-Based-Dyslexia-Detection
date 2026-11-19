@@ -35,7 +35,9 @@ Open [the frontend](http://127.0.0.1:5173). In a second terminal at the reposito
 root, run the existing backend:
 
 ```powershell
-python -m uvicorn src.api:app --host 127.0.0.1 --port 8000
+$env:SUPABASE_URL = 'https://your-project.supabase.co'
+$env:SUPABASE_PUBLISHABLE_KEY = 'your-publishable-or-legacy-anon-key'
+python -m uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload --reload-dir src
 ```
 
 The API requires its existing Python dependencies and compatible model checkpoints.
@@ -54,8 +56,15 @@ Site URL and allowed redirects for your actual origin and these paths:
 
 Accounts use Supabase email/password authentication. Email confirmation must finish
 before protected pages open. Profiles/history are scoped by user ID and RLS.
-FastAPI currently does not validate Supabase JWTs: frontend guards do not secure
-the inference service. Restricted external deployments need backend enforcement.
+Use the same project for the API and frontend. The API validates the browser
+session with Supabase Auth on every screening and report request. Account, key,
+and session errors remain visible. `/health` stays public and reports the process
+and device status.
+
+Run the [two-account policy check](../supabase/tests/screening_owner_isolation.sql)
+with the database administrator on a local or staging Supabase database. The
+script creates disposable accounts inside a rolled-back transaction. It checks
+that each account sees only its own screenings and can save its own record.
 
 ## Included workflows
 
@@ -78,6 +87,9 @@ the inference service. Restricted external deployments need backend enforcement.
 - Explicit save with optional original/overlay retention, idempotent save retry,
   owner-scoped paginated history/search/filter, and saved detail.
 - Profile editing, device-local text size/spacing, and PDF report download.
+- The supplied logo appears on the landing, account, workspace and error pages,
+  browser icons, and the screening PDF. Unknown routes and render failures offer
+  a way back to the overview.
 
 Handwriting, unsaved results, and overlays remain in memory unless the user chooses
 to save them. Original/overlay retention defaults off. Unsaved data is lost on
@@ -121,10 +133,20 @@ npm run build
 npm run preview
 ```
 
-Deploy `dist/` to a static host with an SPA fallback to `index.html`. Set public
-environment variables before building, the Supabase allowed redirects, and the
-backend `FRONTEND_URL`. The existing FastAPI `/ui` mount still serves the legacy
-frontend. This work does not change it or deploy either frontend.
+Deploy `dist/` to a static host. Rewrite known app routes to `index.html`, including
+`/result/:id`, `/auth/callback`, and the aliases in the route plan. Configure the
+host to serve `404.html` for unknown paths and `500.html` for server errors when
+supported. Preserve the HTTP error status on those responses. A host with a
+catch-all SPA fallback uses the in-app error page for unknown routes when JavaScript
+loads. Both standalone pages work without JavaScript.
+
+Set the browser variables before building, configure Supabase redirects, and
+set the API's `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `FRONTEND_URL`.
+Use HTTPS and set upload and request limits at the production ingress. The
+FastAPI `/ui` mount still serves the legacy frontend if it is built.
+When packaging FastAPI separately, include
+`frontend-new/public/assets/brand/neurowrite-mark.png` at the same relative path
+for the branded PDF header.
 
 The prototype is intentionally `noindex`. No approved legal text or canonical
 domain was supplied, so no fabricated policy pages/domain are published.

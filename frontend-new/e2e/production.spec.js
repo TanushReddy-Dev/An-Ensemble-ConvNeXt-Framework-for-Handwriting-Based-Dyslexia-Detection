@@ -69,3 +69,64 @@ test("the production overview has useful content with JavaScript disabled", asyn
     await context.close();
   }
 });
+
+test("the built error pages load the logo and offer recovery without JavaScript", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 390, height: 844 },
+  });
+  try {
+    const page = await context.newPage();
+    for (const [code, title] of [
+      [404, "This page isn't in the workspace."],
+      [500, "The workspace could not open."],
+    ]) {
+      await page.goto(`http://127.0.0.1:5175/${code}.html`);
+      await expect(
+        page.getByRole("heading", { level: 1, name: title }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Back to overview" }),
+      ).toHaveAttribute("href", "/");
+      await expect
+        .poll(() =>
+          page
+            .locator(".workspace-error-art")
+            .evaluate((img) => img.naturalWidth),
+        )
+        .toBe(384);
+      await page.screenshot({ path: `shots/error-${code}-390.png` });
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test("the workspace offers recovery when a route render fails", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const create = Document.prototype.createElement;
+    let failed = false;
+    Document.prototype.createElement = function (tag, options) {
+      if (tag === "main" && !failed) {
+        failed = true;
+        throw new Error("Synthetic route render failure");
+      }
+      return create.call(this, tag, options);
+    };
+  });
+  await page.goto("/forced-render-test");
+  await expect(
+    page.getByRole("heading", { name: "The workspace could not open." }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Reload workspace" }),
+  ).toBeVisible();
+  await expect(page.getByRole("main")).toBeFocused();
+  await page.screenshot({ path: "shots/error-runtime-1280.png" });
+  await page.getByRole("link", { name: "Back to overview" }).click();
+  await expect(page).toHaveURL("http://127.0.0.1:5175/");
+});

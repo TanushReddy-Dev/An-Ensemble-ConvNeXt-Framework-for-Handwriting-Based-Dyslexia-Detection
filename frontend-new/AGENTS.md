@@ -54,8 +54,8 @@ prohibits use of the Sites skill; keep this work local and do not publish it.
   caches, upload state, and object URLs on sign-out or account changes.
 - Gate private routes until session restoration completes. Email confirmation is
   not a signed-in session. Missing Supabase configuration is a setup state.
-- RLS protects database operations, but FastAPI currently does not validate auth
-  tokens. A route guard is not backend access control; do not claim otherwise.
+- RLS protects database operations. FastAPI validates screening and report tokens
+  against the configured Supabase Auth project. Keep both enforcement points.
 - A save failure must retain the result in memory and offer a separate save retry
   with the same ID. Do not rerun inference to retry saving.
 - Use metadata-only, paginated history queries. Fetch base64 image fields only

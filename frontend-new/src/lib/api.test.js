@@ -13,7 +13,15 @@ import { setupServer } from "msw/node";
 import { screen, validateImage } from "./api.js";
 import { fixture } from "../test/fixtures.js";
 vi.hoisted(() => vi.stubEnv("VITE_API_URL", "http://127.0.0.1:8000"));
-vi.mock("./supabase.js", () => ({ supabase: null }));
+vi.mock("./supabase.js", () => ({
+  supabase: {
+    auth: {
+      getSession: async () => ({
+        data: { session: { access_token: "fixture-session" } },
+      }),
+    },
+  },
+}));
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
@@ -29,6 +37,9 @@ describe("screening requests", () => {
         );
         expect(request.headers.get("content-type")).toMatch(
           /multipart\/form-data; boundary=/,
+        );
+        expect(request.headers.get("authorization")).toBe(
+          "Bearer fixture-session",
         );
         return HttpResponse.json(fixture);
       }),

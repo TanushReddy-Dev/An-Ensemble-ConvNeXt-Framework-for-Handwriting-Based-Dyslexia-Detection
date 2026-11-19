@@ -1,162 +1,73 @@
-# NeuroWrite AI: Handwriting-Based Dyslexia & Neuromotor Screening System
+# NeuroWrite AI
 
-> ⚠️ **CRITICAL CLINICAL NOTICE**: This software is strictly an experimental **screening decision-support tool**, **NOT** a diagnostic instrument. It provides automated neuromotor risk estimations based on handwriting morphological patterns and must **NEVER** replace formal clinical evaluations conducted by qualified educational psychologists, pediatricians, or licensed medical specialists.
+NeuroWrite AI is an experimental handwriting screening tool for professional
+review. A qualified professional is responsible for formal assessment.
 
----
+The FastAPI service scores handwriting images with the available ConvNeXt-Tiny
+model folds, or falls back to ResNet-50 when no ConvNeXt folds load. The score is
+the mean of the loaded folds. Grad-CAM shows regions that contribute positively
+to that average. Stroke attribution uses a three-step Integrated Gradients
+approximation from the first loaded fold.
 
-## 🌟 Overview
+## Run locally
 
-**NeuroWrite AI** is a deep learning screening system designed to detect subtle handwriting irregularities, character mirroring, and neuromotor reversal patterns associated with dyslexia and dysgraphia. 
+Use Python 3.10+ and Node 22.12+ with versions of Torch and TorchVision that
+support your platform. From the repository root:
 
-The architecture is built on a **5-fold cross-validated ConvNeXt-Tiny + Attention Multiple Instance Learning (MIL)** ensemble with visual explainability:
-- **PyTorch Grad-CAM**: Highlights class-activation saliency hotspots across handwriting zones.
-- **Integrated Gradients (IG)**: Delivers axiomatic, pixel-level attribution directly along pen strokes.
-
-The system features a **FastAPI** backend powering a modern **React + Tailwind CSS** handwriting screening web app with Supabase PostgreSQL authentication and automated PDF report generation.
-
----
-
-## 🏗️ System Architecture
-
-```
-                    ┌────────────────────────────┐
-                    │  Handwriting Image Input   │
-                    │  (Full Page / Worksheet)   │
-                    └─────────────┬──────────────┘
-                                  │
-                   [Preprocessing & Padding: 512x512]
-                   (Grayscale, Inversion, Rule Removal)
-                                  │
-                   [Patch Grid Decomposition: 224x224]
-                   (Overlapping Patches with Hann Apodization)
-                                  │
-          ┌───────────────────────┴───────────────────────┐
-          │  5-Fold ConvNeXt-Tiny + Attention MIL Ensemble │
-          │  Fold 0 │ Fold 1 │ Fold 2 │ Fold 3 │ Fold 4    │
-          └───────────────────────┬───────────────────────┘
-                                  │
-                      [Ensemble Soft-Voting Aggregation]
-                                  │
-          ┌───────────────────────┼───────────────────────┐
-          ▼                       ▼                       ▼
-   [Risk Assessment]     [Visual Explainability]    [Dossier Export]
-  • Binary screening     • Grad-CAM Heatmap         • ReportLab PDF Report
-  • Risk score            • Integrated Gradients    • Screening disclaimer
-  • Fold uncertainty      Stroke Pixel Overlay      Student/examiner fields
-```
-
-### Key Technical Characteristics
-1. **5-Fold Ensemble Soft-Voting**: Aggregates predictions across five independent models and returns fold disagreement as an uncertainty band. The risk score is a screening estimate, not a diagnosis.
-2. **Attention Multiple Instance Learning (MIL)**: Weights each handwriting region adaptively according to stroke complexity and morphology.
-3. **Dual Explainability**: Ensures transparency by visualizing exactly which stroke inversions and hesitation contours influenced the screening outcome.
-
----
-
-## 📁 Repository Structure
-
-```
-├── frontend/                  # React + Vite handwriting screening UI
-│   └── src/
-│       ├── components/        # Reusable UI & domain components (Cards, Badges, Dropzone)
-│       ├── context/           # Auth, Theme, and Toast React Context providers
-│       ├── pages/             # Dashboard, Upload, Processing, Result, History, Report
-│       └── utils/             # API client, Supabase config, styling helpers
-├── src/                       # Production Python inference engine & REST API
-│   ├── api.py                 # FastAPI REST service (/predict, /health, /report, etc.)
-│   ├── config.py              # Global hyperparameters, device setup, and paths
-│   ├── explain_ig.py          # Integrated Gradients & ink-stroke attribution algorithms
-│   ├── model_page.py          # ConvNeXt-Tiny + Attention MIL model architecture
-│   ├── preprocess.py          # Image normalization, padding, and rule removal
-│   ├── report_generator.py    # ReportLab clinical screening PDF generator
-│   └── screening_engine.py    # DyslexiaScreeningEngine production inference wrapper
-├── colab/                     # Google Colab training notebooks and generators
-├── data/                      # Training data is intentionally excluded from the upload ZIP
-├── requirements.txt           # Pinned Python runtime/test dependencies
-├── outputs/checkpoints/       # Trained 5-fold ConvNeXt-Tiny checkpoint weights (.pt)
-├── supabase/                  # PostgreSQL database schema & Row-Level Security policies
-└── tests/                     # PyTest integration and endpoint unit test suite
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Backend Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/santhoshkmr03/An-Ensemble-ConvNeXt-Framework-for-Handwriting-Based-Dyslexia-Detection.git
-cd An-Ensemble-ConvNeXt-Framework-for-Handwriting-Based-Dyslexia-Detection
-
-# Install pinned Python dependencies
+```powershell
 python -m pip install -r requirements.txt
-
-# Start the FastAPI REST service
-uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload
+$env:SUPABASE_URL = 'https://your-project.supabase.co'
+$env:SUPABASE_PUBLISHABLE_KEY = 'your-publishable-or-legacy-anon-key'
+python -m uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload --reload-dir src
 ```
-> **Note on Model Checkpoints**: PyTorch model weights (`.pt`) exceed GitHub's 100MB file limit and are gitignored. Place the 5-fold checkpoints (`convnext_fold0_best.pt` through `convnext_fold4_best.pt`) in `outputs/checkpoints/`. Weights can be produced directly using the included Google Colab notebook in `colab/Dyslexia_Screening_Colab.ipynb`.
 
-API documentation is interactively accessible at `http://127.0.0.1:8000/docs`.
+Use the same Supabase project in the API and browser. Configure database policies
+and account redirects using the [frontend setup guide](frontend-new/README.md).
+The API validates each screening or report request with Supabase Auth. The
+project's publishable key or legacy anon key is sufficient.
 
-### 2. Frontend Setup
+In another terminal:
 
-```bash
-cd frontend
-
-# Install node dependencies
-npm install
-
-# Start the development workstation
+```powershell
+Set-Location frontend-new
+npm ci
+Copy-Item .env.example .env
+# Set the public VITE_ values described in the frontend setup guide.
 npm run dev
 ```
-Open `http://localhost:5173` in your browser. The frontend requires Supabase configuration in
-`frontend/.env` for authentication and cross-device history; copy the variable names from
-`frontend/.env.example`. The API URL defaults to `http://127.0.0.1:8000` and can be overridden
-with `VITE_API_URL`.
 
----
+Open [NeuroWrite AI](http://127.0.0.1:5173/). The current frontend is plain HTML,
+CSS, and JavaScript. The React application in `frontend/` remains available as a
+legacy reference.
 
-## 📡 REST API Endpoints
+## Models and API
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/v1/screen` | Authoritative 5-fold ConvNeXt-Tiny + Attention MIL screening with Grad-CAM and Integrated Gradients overlays |
-| `POST` | `/api/v1/report` | Generates and exports a clinical screening PDF dossier (ReportLab) |
-| `POST` | `/predict` | UI compatibility endpoint returning classification, risk score, and attention overlays |
-| `GET` | `/health` | Compute diagnostics, loaded fold count, and device verification |
-| `GET` | `/docs` | Interactive Swagger UI API documentation and testing workbench |
+Trained checkpoints are supplied separately. Place available checkpoints named
+`convnext_fold0_best.pt` through `convnext_fold4_best.pt` under
+`outputs/checkpoints/`. See the [Colab training guide](colab/README.md).
+Weights load on the first inference request for a backbone. The repository
+excludes trained weights and raw handwriting data.
 
-### Submission package contents
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Service and device status. |
+| `GET /docs` | Interactive API docs. |
+| `POST /api/v1/screen` | Experimental outcome, model score, fold range, and available overlays. |
+| `POST /api/v1/report` | Reruns screening with the submitted image and returns a branded PDF summary. |
+| `POST /api/v1/screen-letters-ig` | Stroke-segmentation and attribution research endpoint. |
+| `POST /predict` | Legacy API response for compatibility. |
 
-The upload-ready package includes the application source, tests, Supabase schema/migrations,
-the five active ConvNeXt-Tiny checkpoints under `outputs/checkpoints/`, and the training notebooks
-under `colab/`. It intentionally excludes raw handwriting datasets, dataset archives, sample/demo
-images, `node_modules`, frontend build output, local environment files, generated reports, and
-OpenCode/editor state.
+All four POST routes require a Supabase bearer token. The health endpoint can
+respond before any checkpoints load. The frontend stores screening metadata only
+when a user saves a result. Image retention is an explicit choice.
 
-The packaged API does not include the old static-token mock login/register endpoints or the curated
-sample endpoint. Authentication is handled by Supabase; do not put live Supabase credentials in the
-ZIP.
+## Verification and deployment
 
----
+Run `python -m pytest -q` from the repository root. The Python suite uses
+synthetic images and models, including PDF and attribution regression checks.
+Run `npm test`, `npm run test:e2e`, `npm run build`, and
+`npm run test:production` in `frontend-new/` for browser and build verification.
 
-## 🧪 Testing & Verification
-
-Run the full PyTest suite to verify REST endpoints, inference accuracy, and explainability generation:
-```bash
-pytest tests/test_api.py -v
-```
-
-Build the production frontend bundle:
-```bash
-cd frontend
-npm run build
-```
-
----
-
-## 🔒 Ethical AI & Clinical Screening Guidelines
-
-- **Screening Only**: This application is strictly an early-warning decision-support tool designed for schools and clinical labs. It must **never** be used as a definitive clinical diagnosis.
-- **Privacy & Security**: Handwriting specimens contain sensitive biometric and educational data. All database tables in `supabase/schema.sql` enforce strict Row-Level Security (RLS) policies.
-- **Model Transparency**: Explanations via Grad-CAM and Integrated Gradients must always accompany inference outputs to prevent algorithmic bias or blind trust in raw confidence scores.
+The [verification record](frontend-new/VERIFICATION.md) describes the checks
+and their limits. The [frontend setup guide](frontend-new/README.md) covers
+static hosting, error documents, Supabase ownership checks, and deployment settings.

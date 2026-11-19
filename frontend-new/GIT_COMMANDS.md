@@ -1,21 +1,19 @@
-# Manual Git commands
+# Manual Git handoff
 
-No commits, pushes, or branch changes were made by the assistant. The observed
-branch is `main`; the remote is named `origin`. Run these yourself from PowerShell.
+From the repository root, review the local changes and publish on a new branch.
+These commands stage the release work shown in the current handoff. They leave
+environment files, checkpoints, reports, raw samples, and build output out of Git.
 
 ```powershell
-Set-Location -LiteralPath 'C:\Users\Tanus\Projects\workspace\DyslexiaFinal'
 git status --short
-git switch -c codex/fresh-frontend
-git add -- AGENTS.md frontend-new
+git switch -c codex/release-completion
+git add -- README.md requirements.txt colab frontend-new src/api.py src/auth.py src/report_generator.py supabase/tests tests
+git -c core.whitespace=cr-at-eol diff --cached --check
 git diff --cached --stat
 git diff --cached
-git commit -m "Build NeuroWrite frontend in HTML, CSS, and JavaScript"
-git push -u origin codex/fresh-frontend
+git commit -m "Complete NeuroWrite screening release"
+git push -u origin codex/release-completion
 ```
 
-Review the staged diff before the commit. The new frontend's ignore rules exclude
-local environment files, dependencies, output bundles, browser profiles, test
-artifacts, and transient Taste checker state. Stage the two deal-history JSON
-files, documented checker waivers, responsive handwriting images, and hero
-sharing image along with the app source.
+Review the staged diff before committing. Use a pull request for the review
+and merge. Deployment configuration and Supabase credentials live outside Git.

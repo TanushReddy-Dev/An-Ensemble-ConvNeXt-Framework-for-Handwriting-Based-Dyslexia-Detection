@@ -40,7 +40,7 @@ The independent app and tests are now in this folder; no deployment is performed
 | Reports | `/api/v1/report` requires the image and performs inference again. It does not accept a saved result ID. |
 | Hosting | FastAPI currently mounts only `frontend/dist` at `/ui`. The new build will not automatically appear there. |
 | Health | `/health` reports device and supported backbones, not loaded checkpoint count or inference readiness. |
-| Security | FastAPI screening/report routes have no Supabase JWT validation. UI authentication cannot secure those endpoints. |
+| Security | FastAPI validates bearer tokens with Supabase Auth on upload routes. Owner-scoped database policies protect saved records. |
 
 ## 3. Frontend stack
 
@@ -258,13 +258,11 @@ Configure Supabase Site URL/allowed redirects and FastAPI `FRONTEND_URL` to the
 actual deployed origin. Use HTTPS in deployment. Do not change the old `/ui`
 mount until a deliberate frontend cutover is requested.
 
-Before an external release, resolve concrete backend integration gaps: actual API
-authentication if access is restricted, server-side image size/resource limits,
-an appropriate inference deployment/timeout budget, available model checkpoints,
-and accurate retention/privacy policy. A frontend-only build cannot establish
-these guarantees. A future immutable report endpoint could export a saved result
-without rerunning the model; that is a separate backend change.
+Before an external release, configure API authentication, enforce ingress limits,
+verify the inference deployment and timeout budget with the approved checkpoints,
+and confirm retention and privacy policy. A future immutable report endpoint
+could export a saved result without rerunning the model.
 
-The implementation adds the independent frontend only. Backend, database, legacy
-frontend, and deployment configuration remain unchanged. The public overview is
+The independent frontend uses the authenticated screening API and branded PDF.
+The public overview is
 authored as static HTML; deployment still needs only static hosting.
