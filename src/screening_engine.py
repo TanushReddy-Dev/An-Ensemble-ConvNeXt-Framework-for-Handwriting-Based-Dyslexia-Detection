@@ -50,52 +50,46 @@ class DyslexiaScreeningEngine:
         # Operational screening threshold calibrated from training folds
         self.screening_threshold = 0.50
 
-        # Model containers (Single lightweight base model in RAM; fold weights loaded sequentially on CPU)
-        self.base_model: Optional[PageModel] = None
-        self.checkpoint_paths: List[Path] = []
-        self.num_models_available = 0
+        # Model containers
+        self.page_ensemble: List[PageModel] = []
 
         self._load_models()
 
     def _load_models(self) -> None:
-        """Discover 5-fold checkpoints and initialize single model skeleton in memory."""
-        import gc
+        """Load 5-fold ensemble for page model (ConvNeXt-Tiny or ResNet-50)."""
         prefix = "convnext" if self.backbone == "convnext_tiny" else "page"
-        discovered = []
         for fold in range(config.K_FOLDS):
             ckpt_path = self.checkpoint_dir / f"{prefix}_fold{fold}_best.pt"
             if ckpt_path.exists():
-                discovered.append(ckpt_path)
+                try:
+                    m = create_page_model(backbone_name=self.backbone)
+                    state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
+                    m.load_state_dict(state)
+                    m.to(self.device).eval()
+                    self.page_ensemble.append(m)
+                except Exception as e:
+                    print(f"Warning: Failed to load page fold {fold} checkpoint: {e}")
 
-        if not discovered and prefix != "page":
+        # If primary backbone checkpoints weren't found, try fallback
+        if not self.page_ensemble and prefix != "page":
             print(f"Notice: No {prefix} checkpoints found. Falling back to ResNet-50 checkpoints...")
             self.backbone = "resnet50"
             for fold in range(config.K_FOLDS):
                 ckpt_path = self.checkpoint_dir / f"page_fold{fold}_best.pt"
                 if ckpt_path.exists():
-                    discovered.append(ckpt_path)
-
-        self.checkpoint_paths = discovered
-        self.num_models_available = len(discovered)
-
-        # Initialize exactly ONE model skeleton in RAM to respect cloud memory limits (<= 512MB RAM)
-        if self.checkpoint_paths:
-            self.base_model = create_page_model(backbone_name=self.backbone)
-            state = torch.load(self.checkpoint_paths[0], map_location=self.device, weights_only=True)
-            self.base_model.load_state_dict(state)
-            self.base_model.to(self.device).eval()
-            del state
-            gc.collect()
+                    try:
+                        m = create_page_model(backbone_name="resnet50")
+                        state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
+                        m.load_state_dict(state)
+                        m.to(self.device).eval()
+                        self.page_ensemble.append(m)
+                    except Exception as e:
+                        print(f"Warning: Failed to load fallback page fold {fold}: {e}")
 
         print(
-            f"[ScreeningEngine] Initialized: 1 base skeleton with {self.num_models_available} fold checkpoints ({self.backbone}) "
+            f"[ScreeningEngine] Initialized: {len(self.page_ensemble)} page models ({self.backbone}) "
             f"on {self.device}."
         )
-
-    @property
-    def page_ensemble(self) -> List[Any]:
-        """Compatibility property for legacy checks expecting non-empty list."""
-        return [self.base_model] if self.base_model is not None else []
 
     def screen(
         self,
@@ -148,34 +142,17 @@ class DyslexiaScreeningEngine:
         norm_arr = (padded_arr - mu) / sigma
         page_tensor = torch.from_numpy(norm_arr).unsqueeze(0).float()  # (1, 512, 512)
 
-        # Forward pass across all loaded ensemble checkpoints sequentially
+        # Forward pass across all loaded ensemble models
         fold_probs: List[float] = []
         fold_attentions: List[np.ndarray] = []
-        import gc
 
         with torch.no_grad():
             tensor_device = page_tensor.to(self.device)
-            # Evaluate each fold one by one to keep memory footprint <= 180MB
-            for ckpt_path in self.checkpoint_paths:
-                try:
-                    state = torch.load(ckpt_path, map_location=self.device, weights_only=True)
-                    self.base_model.load_state_dict(state)
-                    self.base_model.eval()
-                    logit, attn_weights = self.base_model(tensor_device)
-                    prob = float(torch.sigmoid(logit).cpu().item())
-                    fold_probs.append(prob)
-                    fold_attentions.append(attn_weights.cpu().numpy())
-                    del state
-                except Exception as e:
-                    print(f"Warning: Fold evaluation issue with {ckpt_path.name}: {e}")
-
-            # Reload fold 0 for explainability hooks
-            if self.checkpoint_paths:
-                state0 = torch.load(self.checkpoint_paths[0], map_location=self.device, weights_only=True)
-                self.base_model.load_state_dict(state0)
-                self.base_model.eval()
-                del state0
-            gc.collect()
+            for model in self.page_ensemble:
+                logit, attn_weights = model(tensor_device)
+                prob = float(torch.sigmoid(logit).cpu().item())
+                fold_probs.append(prob)
+                fold_attentions.append(attn_weights.cpu().numpy())
 
         # Ensemble Statistics
         mean_risk = float(np.mean(fold_probs))
@@ -216,7 +193,7 @@ class DyslexiaScreeningEngine:
         result: Dict[str, Any] = {
             "input_type": "page",
             "backbone": self.backbone,
-            "models_in_ensemble": len(fold_probs) or self.num_models_available,
+            "models_in_ensemble": len(self.page_ensemble),
             "risk_score": mean_risk,
             "risk_percentage": round(mean_risk * 100, 1),
             "uncertainty_band": {
@@ -310,7 +287,6 @@ class DyslexiaScreeningEngine:
 
         handle_f.remove()
         handle_b.remove()
-        primary_model.zero_grad(set_to_none=True)
 
         if not activations or not gradients:
             return Image.new("RGB", pil_img.size)
@@ -387,7 +363,7 @@ class DyslexiaScreeningEngine:
         page_tensor: torch.Tensor,
         mean_risk: float,
         max_crops: int = 60,
-        ig_steps: int = 1,
+        ig_steps: int = 3,
     ) -> Dict[str, Any]:
         """Compute pixel-level stroke Integrated Gradients from the PageModel ensemble,
         segment characters, and calculate stroke anomaly attribution density per character.
@@ -478,8 +454,6 @@ class DyslexiaScreeningEngine:
             step_logit.backward()
             if step_input.grad is not None:
                 accum_grads += step_input.grad
-            del step_input, step_logit
-            primary_model.zero_grad(set_to_none=True)
 
         avg_grads = (accum_grads / ig_steps).squeeze().detach().cpu().numpy()
         diff_np = diff_tensor.squeeze().detach().cpu().numpy()
