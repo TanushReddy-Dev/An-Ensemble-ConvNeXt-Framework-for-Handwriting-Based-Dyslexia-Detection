@@ -344,6 +344,7 @@ test("retained image and owner-scoped saved detail survive a reload", async ({
         risk_score: 0.34,
         risk_percentage: 34,
         risk_category: "Typical",
+        gradcam_overlay_base64: `data:image/png;base64,${png}`,
         screening_classification:
           "No Elevated Screening Signal Detected (Typical Pattern)",
         uncertainty_band: { low: 0.3, high: 0.4, std: 0.04, spread: 0.1 },
@@ -410,6 +411,12 @@ test("retained image and owner-scoped saved detail survive a reload", async ({
     path: `shots/app-result-${page.viewportSize().width}.png`,
     fullPage: true,
   });
+  await page.getByRole("tab", { name: "Grad-CAM", exact: true }).click();
+  const explanation = page.getByRole("tabpanel", { name: "Grad-CAM" });
+  await expect(explanation).toContainText(
+    "The scoring target for this overlay is unavailable.",
+  );
+  await expect(explanation.getByText("Model folds disagreed")).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -644,6 +651,7 @@ test("upload, processing, and result have their own URLs without duplicate infer
       json: {
         ...fixture,
         gradcam_overlay_base64: `data:image/png;base64,${png}`,
+        gradcam_target: "ensemble_mean",
         uncertainty_band: { low: 0.09, high: 0.999, std: 0.32, spread: 0.909 },
         per_fold_predictions: [0.09, 0.51, 0.7, 0.901, 0.999],
       },
@@ -675,7 +683,9 @@ test("upload, processing, and result have their own URLs without duplicate infer
   await expect(explanation).toContainText(
     "Model folds disagreed · 9.0% – 99.9%",
   );
-  await expect(explanation).toContainText("first model fold");
+  await expect(explanation).toContainText(
+    "average screening score across the model folds",
+  );
   await explanation.screenshot({
     path: `shots/gradcam-panel-${page.viewportSize().width}.png`,
     animations: "disabled",

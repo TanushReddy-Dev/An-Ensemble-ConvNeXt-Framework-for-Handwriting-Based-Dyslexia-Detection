@@ -27,6 +27,7 @@ export const resultSchema = z
     ink_mass_fraction: probability.nullable().optional(),
     attention_overlay_base64: image,
     gradcam_overlay_base64: image,
+    gradcam_target: z.literal("ensemble_mean").optional(),
     ig_overlay_base64: image,
   })
   .refine(

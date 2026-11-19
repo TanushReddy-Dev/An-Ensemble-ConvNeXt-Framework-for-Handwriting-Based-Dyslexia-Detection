@@ -66,10 +66,11 @@ the inference service. Restricted external deployments need backend enforcement.
 - Image selection/drop, file and decoding validation, preview, and explicit submit.
 - Cancel/retry, honest refresh recovery, classification, fold disagreement, image
   attribution tabs, missing-image states, and an enlarged viewer.
-- Fresh Grad-CAM overlays use lighter cobalt shading. The viewer labels the
-  contribution as relative to the image and from the first model fold. It calls
-  out fold scores on both sides of the screening threshold. Saved overlays keep
-  the image stored at screening time.
+- Fresh Grad-CAM overlays use cobalt shading to show regions that contribute
+  positively to the average screening score. The viewer describes strength
+  relative to the image and calls out fold scores on both sides of the threshold.
+  Saved overlays keep their stored images. History uses general attribution
+  wording because saved records lack the attribution target.
 - Current and saved results show **Potential dyslexia** for an elevated model
   signal or **Normal** when the model found no elevated signal. Both labels
   describe experimental screening of the handwriting sample. History and the
