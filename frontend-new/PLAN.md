@@ -95,9 +95,10 @@ accurate project-specific content; unresolved policy text is a release dependenc
 6. Display the screening outcome as “Potential dyslexia” for Elevated or “Normal”
    for Typical. Lead with the outcome and what it means, then show the model
    score, fold disagreement, returned disclaimer, and available attribution images.
-   Explain missing overlays independently. Grad-CAM shows relative positive
-   contributions to the first fold's score. Show disagreement beside its
-   legend when fold scores fall on both sides of the 50% screening threshold.
+   Explain missing overlays independently. Grad-CAM for new screenings shows
+   relative positive contributions to the average screening score across
+   folds. Show disagreement beside its legend when fold scores fall on both
+   sides of the 50% screening threshold.
 7. Offer an explicit Save result action. Saving metadata and retaining the original
    image are distinct choices; image retention defaults off. Preserve the completed
    result if persistence fails. Retry the same record ID without duplicate rows.
@@ -120,7 +121,7 @@ Only nonsensitive reading preferences may use custom local browser persistence.
 | Screen | `POST /api/v1/screen?backbone=convnext_tiny&input_mode=page&include_overlay_base64=true`, multipart `file`. |
 | Screen response | `risk_score` 0..1, `risk_percentage` 0..100, `risk_category`, `screening_classification`, `uncertainty_band`, `per_fold_predictions`, `models_in_ensemble`, `backbone`, `input_type`, `disclaimer`; nullable ink mass and optional overlays. |
 | Uncertainty | Object containing `std`, `low`, `high`, `spread`, expressed in score units. Format as percentages only at presentation. |
-| Explanation images | Optional `attention_overlay_base64`, `gradcam_overlay_base64`, `ig_overlay_base64`; data URLs, not storage object paths. |
+| Explanation images | Optional `attention_overlay_base64`, `gradcam_overlay_base64`, `ig_overlay_base64`; data URLs, not storage object paths. `gradcam_target: "ensemble_mean"` identifies new ensemble overlays. |
 | PDF | `POST /api/v1/report`, multipart `file`, `student_id`, `examiner_name`, `backbone`, `input_mode`; returns PDF bytes. |
 | History/detail | Supabase `screenings`, owner-scoped queries; generate record ID on the client. |
 | Profile | Supabase `profiles`: actual name/institution fields; email changes, if later added, use Auth APIs. |

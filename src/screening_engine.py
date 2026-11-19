@@ -210,6 +210,7 @@ class DyslexiaScreeningEngine:
             "preprocessed_image": padded_arr,
             "attention_overlay": heatmap_overlay,
             "gradcam_overlay": gradcam_overlay,
+            "gradcam_target": "ensemble_mean",
             "disclaimer": DISCLAIMER_TEXT,
         }
 
@@ -250,50 +251,42 @@ class DyslexiaScreeningEngine:
         plt.close(fig)
         return rgba[:, :, :3]
 
+    def _fold_gradcam(self, model: PageModel, page: torch.Tensor) -> torch.Tensor:
+        backbone = model.encoder.backbone
+        if hasattr(backbone, "features"):
+            target = backbone.features[-1]
+        elif isinstance(backbone, nn.Sequential) and isinstance(backbone[-1], nn.AdaptiveAvgPool2d):
+            # The ResNet encoder keeps its spatial layer just before average pooling.
+            target = backbone[-2]
+        else:
+            target = backbone.layer4
+
+        activations = []
+        hook = target.register_forward_hook(lambda _module, _inputs, output: activations.append(output))
+        try:
+            logit, _ = model(page)
+            activation = activations[0]
+            # Each fold supplies its derivative of the displayed mean of sigmoid scores.
+            contribution = logit.sigmoid() / len(self.page_ensemble)
+            (gradient,) = torch.autograd.grad(contribution, activation)
+        finally:
+            hook.remove()
+
+        weights = gradient.mean(dim=(2, 3), keepdim=True)
+        return (weights * activation.detach()).sum(dim=1).cpu()
+
     def _compute_gradcam(
         self,
         pil_img: Image.Image,
         page_tensor: torch.Tensor,
     ) -> Image.Image:
-        """Compute Grad-CAM activation heatmap from the primary PageModel."""
+        """Localize positive contributions to the ensemble mean screening score."""
         if not self.page_ensemble:
-            return Image.new("RGB", pil_img.size)
+            return pil_img.copy()
 
-        primary_model = self.page_ensemble[0]
-        # Identify target layer based on backbone
-        if hasattr(primary_model.encoder.backbone, "features") and len(primary_model.encoder.backbone.features) > 7:
-            target_layer = primary_model.encoder.backbone.features[7]
-        elif hasattr(primary_model.encoder.backbone, "layer4"):
-            target_layer = primary_model.encoder.backbone.layer4[-1]
-        else:
-            target_layer = list(primary_model.encoder.backbone.children())[-1]
-
-        activations = []
-        gradients = []
-
-        def f_hook(module, inp, out):
-            activations.append(out)
-
-        def b_hook(module, grad_in, grad_out):
-            gradients.append(grad_out[0])
-
-        handle_f = target_layer.register_forward_hook(f_hook)
-        handle_b = target_layer.register_full_backward_hook(b_hook)
-
-        tensor_device = page_tensor.clone().to(self.device).requires_grad_(True)
-        logit, _ = primary_model(tensor_device)
-        logit.backward()
-
-        handle_f.remove()
-        handle_b.remove()
-
-        if not activations or not gradients:
-            return Image.new("RGB", pil_img.size)
-
-        act = activations[0]
-        grad = gradients[0]
-        weights = grad.mean(dim=(2, 3), keepdim=True)
-        cam_patches = torch.nn.functional.relu((weights * act).sum(dim=1))
+        page = page_tensor.detach().to(self.device).requires_grad_(True)
+        # Combine signed evidence before ReLU so opposing folds can cancel.
+        cam_patches = sum(self._fold_gradcam(model, page) for model in self.page_ensemble).relu()
 
         target_h, target_w = page_tensor.shape[-2:]
         regions = preprocess.page_patch_regions(target_h, target_w)

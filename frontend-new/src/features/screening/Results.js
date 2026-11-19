@@ -146,7 +146,10 @@ function ResultView({
       id: "gradcam",
       title: "Grad-CAM",
       source: result.gradcam_overlay_base64,
-      info: "Shading shows regions that increased the score in the first model fold. Strength is relative to this image.",
+      info:
+        result.gradcam_target === "ensemble_mean"
+          ? "Shading highlights regions associated with increases in the average screening score across the model folds. Strength is relative to this image."
+          : "Shading shows relative contribution within this image. The scoring target for this overlay is unavailable.",
     },
     {
       id: "ig",

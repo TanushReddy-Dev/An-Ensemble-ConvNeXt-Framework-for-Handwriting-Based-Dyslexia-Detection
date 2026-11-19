@@ -181,6 +181,8 @@ async def screen_handwriting(
             overlay.save(buf, format="PNG")
             b64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
             response_data["gradcam_overlay_base64"] = f"data:image/png;base64,{b64_str}"
+            if raw_res.get("gradcam_target") == "ensemble_mean":
+                response_data["gradcam_target"] = "ensemble_mean"
 
     # Also return the normalized original image base64 directly from the API for guaranteed UI display
     try:
