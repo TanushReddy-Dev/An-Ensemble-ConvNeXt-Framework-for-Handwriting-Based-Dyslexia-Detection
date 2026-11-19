@@ -76,8 +76,14 @@ export default function Result() {
     ? Number(result.ink_mass_fraction)
     : null;
 
+  const resolvedOpticalSrc =
+    previewUrl ||
+    result?.original_image_base64 ||
+    result?.preview_image_base64 ||
+    null;
+
   const layers = [
-    { id: 'optical', label: 'Original', icon: Eye, src: previewUrl },
+    { id: 'optical', label: 'Original', icon: Eye, src: resolvedOpticalSrc },
     { id: 'attention', label: 'Attention', icon: ScanBarcode, src: result?.attention_overlay_base64 },
     { id: 'gradcam', label: 'Grad-CAM', icon: FireFlame, src: result?.gradcam_overlay_base64 },
     { id: 'ig', label: 'Integrated Gradients', icon: BrainElectricity, src: result?.ig_overlay_base64 },
@@ -86,7 +92,7 @@ export default function Result() {
   const effectiveLayer = layers.some((layer) => layer.id === activeLayer)
     ? activeLayer
     : layers[0]?.id || 'optical';
-  const effectiveSrc = layers.find((layer) => layer.id === effectiveLayer)?.src || previewUrl;
+  const effectiveSrc = layers.find((layer) => layer.id === effectiveLayer)?.src || resolvedOpticalSrc;
 
   useEffect(() => {
     document.body.style.overflow = isFullscreen ? 'hidden' : '';

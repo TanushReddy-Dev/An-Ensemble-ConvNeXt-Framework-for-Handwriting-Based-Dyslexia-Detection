@@ -64,7 +64,11 @@ export default function Processing() {
         if (!active) return;
         clearInterval(tick);
         setElapsed((Date.now() - startedAt) / 1000);
-        const originalImageBase64 = await fileToDataUrl(file).catch(() => null);
+        const originalImageBase64 =
+          (await fileToDataUrl(file).catch(() => null)) ||
+          result?.original_image_base64 ||
+          previewUrl;
+
         saveScreeningRecord({
           ...result,
           filename,
@@ -75,9 +79,13 @@ export default function Processing() {
         navigate('/result', {
           replace: true,
           state: {
-            result,
+            result: {
+              ...result,
+              original_image_base64: originalImageBase64,
+              preview_image_base64: originalImageBase64,
+            },
             file,
-            previewUrl,
+            previewUrl: originalImageBase64 || previewUrl,
             filename,
             completedAt: new Date().toISOString(),
           },

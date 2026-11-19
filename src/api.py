@@ -182,6 +182,14 @@ async def screen_handwriting(
             b64_str = base64.b64encode(buf.getvalue()).decode("utf-8")
             response_data["gradcam_overlay_base64"] = f"data:image/png;base64,{b64_str}"
 
+    # Also return the normalized original image base64 directly from the API for guaranteed UI display
+    try:
+        buf = io.BytesIO()
+        pil_img.save(buf, format="PNG")
+        response_data["original_image_base64"] = f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode('utf-8')}"
+    except Exception:
+        pass
+
     return response_data
 
 
