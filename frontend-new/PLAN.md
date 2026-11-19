@@ -92,8 +92,12 @@ accurate project-specific content; unresolved policy text is a release dependenc
    memory/context. Represent idle/ready/running/succeeded/failed/canceled states.
 5. During inference show indeterminate progress and elapsed time if useful, with
    cancellation and retry behavior. There is no API progress stream or job ID.
-6. Display classification, screening score, fold disagreement, returned disclaimer,
-   and available attribution images. Explain missing overlays independently.
+6. Display the screening outcome as “Potential dyslexia” for Elevated or “Normal”
+   for Typical. Lead with the outcome and what it means, then show the model
+   score, fold disagreement, returned disclaimer, and available attribution images.
+   Explain missing overlays independently. Grad-CAM shows relative positive
+   contributions to the first fold's score. Show disagreement beside its
+   legend when fold scores fall on both sides of the 50% screening threshold.
 7. Offer an explicit Save result action. Saving metadata and retaining the original
    image are distinct choices; image retention defaults off. Preserve the completed
    result if persistence fails. Retry the same record ID without duplicate rows.
@@ -124,7 +128,9 @@ Only nonsensitive reading preferences may use custom local browser persistence.
 Create separate schemas for API response, domain result, and database row. Map
 API `Elevated Risk` to database `Elevated`, and `Typical` to `Typical`. Store
 `Flagged`/`Completed` consistently. Preserve actual classification text and fold
-metadata. Do not use the old compatibility confidence/probabilities fields.
+metadata. Apply the new labels only in the browser, including history and the
+report reference. The generated PDF uses the backend’s wording. Do not use the
+old compatibility confidence/probabilities fields.
 
 Fetch history metadata with range pagination and a deterministic created_at/ID
 order. Search/filter server-side so filters cover the full history, not just the

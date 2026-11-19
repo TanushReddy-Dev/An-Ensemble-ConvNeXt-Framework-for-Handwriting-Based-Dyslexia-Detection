@@ -66,6 +66,14 @@ the inference service. Restricted external deployments need backend enforcement.
 - Image selection/drop, file and decoding validation, preview, and explicit submit.
 - Cancel/retry, honest refresh recovery, classification, fold disagreement, image
   attribution tabs, missing-image states, and an enlarged viewer.
+- Fresh Grad-CAM overlays use lighter cobalt shading. The viewer labels the
+  contribution as relative to the image and from the first model fold. It calls
+  out fold scores on both sides of the screening threshold. Saved overlays keep
+  the image stored at screening time.
+- Current and saved results show **Potential dyslexia** for an elevated model
+  signal or **Normal** when the model found no elevated signal. Both labels
+  describe experimental screening of the handwriting sample. History and the
+  report reference use the same labels.
 - Explicit save with optional original/overlay retention, idempotent save retry,
   owner-scoped paginated history/search/filter, and saved detail.
 - Profile editing, device-local text size/spacing, and PDF report download.
@@ -76,8 +84,9 @@ reload or sign-out. Supabase manages its own auth session storage; no duplicate
 custom token store or screening-history browser store is used.
 
 The report API reruns inference using an original image; it does not export a
-saved result snapshot. Saved records without retained originals require re-upload
-and clearly describe the report as a new analysis.
+saved result snapshot. The PDF uses the screening service's own classification
+wording. Saved records without retained originals require re-upload and clearly
+describe the report as a new analysis.
 
 ## Checks
 
@@ -93,6 +102,8 @@ Browser tests use installed Microsoft Edge, a separate Vite server on 5174, and
 test-only Supabase/API network fixtures. They do not need or modify real accounts.
 Update `playwright.config.js` to use an installed browser if Edge is unavailable.
 Fixtures stay inside `src/test/` and `e2e/`; production has no mock login or results.
+The route reflow test checks the main screens from 320px to 1440px and writes review
+screenshots to the ignored `shots/responsive/` directory.
 
 Read `VERIFICATION.md` for observed results and limitations. Skill assets copied
 to `public/assets/` remain unchanged; `public/taste-init.js` adapts their lifecycle

@@ -68,13 +68,19 @@ test("page fades and the sidebar highlight follow pointer navigation", async ({
     window.navigationMotion = [];
     const animate = Element.prototype.animate;
     Element.prototype.animate = function (frames, options) {
+      const animation = animate.call(this, frames, options);
       if (this.matches("#content, .sidebar-indicator")) {
         window.navigationMotion.push({
           target: this.id || this.className,
           frames,
         });
       }
-      return animate.call(this, frames, options);
+      if (this.matches(".sidebar-indicator")) {
+        animation.pause();
+        animation.currentTime = 75;
+        window.sidebarTransition = animation;
+      }
+      return animation;
     };
   });
   const sidebar = page.locator(".sidebar");
@@ -91,6 +97,8 @@ test("page fades and the sidebar highlight follow pointer navigation", async ({
   expect(motion[0].frames[0].transform).not.toEqual(
     motion[0].frames[1].transform,
   );
+  await page.screenshot({ path: "shots/sidebar-handoff-1280.png" });
+  await page.evaluate(() => window.sidebarTransition.finish());
 
   await sidebar.getByRole("link", { name: "Settings" }).focus();
   await page.keyboard.press("Enter");
@@ -111,7 +119,7 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({ page }) => {
   expect(browserErrors.get(page)).toEqual([]);
 });
-test("public page, mobile menu, and sign-in destination work without overflow", async ({
+test("landing actions animate the actual destination on desktop and mobile", async ({
   page,
   isMobile,
 }) => {
@@ -131,10 +139,51 @@ test("public page, mobile menu, and sign-in destination work without overflow", 
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  await page.evaluate(() => {
+    window.accountTransitions = [];
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (frames, timing) {
+      const animation = animate.call(this, frames, timing);
+      if (this.matches(".auth-layout")) {
+        window.accountTransitions.push(animation);
+        animation.pause();
+        animation.currentTime = 55;
+      }
+      return animation;
+    };
+  });
   await page.getByRole("link", { name: "Start a screening" }).first().click();
   await expect(
     page.getByRole("heading", { name: "Welcome back." }),
   ).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+  const progress = await page.locator(".auth-layout").evaluate((node) => ({
+    transform: getComputedStyle(node).transform,
+    state: history.state,
+  }));
+  expect(progress.transform).not.toBe("none");
+  expect(progress.state).toEqual({ from: "/upload" });
+  await page.screenshot({
+    path: `shots/landing-handoff-${page.viewportSize().width}.png`,
+  });
+  await page.evaluate(() => window.accountTransitions[0].finish());
+  await page.goBack();
+  await expect(page.locator(".public-page")).toBeVisible();
+  if (isMobile) {
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Sign in", exact: true })
+      .click();
+  } else {
+    await page
+      .getByRole("link", { name: "Sign in", exact: true })
+      .first()
+      .click();
+  }
+  await expect(page).toHaveURL(/\/login$/);
+  expect(await page.evaluate(() => window.accountTransitions.length)).toBe(2);
+  await page.evaluate(() => window.accountTransitions[1].finish());
 });
 test("screen once, retry save with same ID, view missing overlay, and download a PDF", async ({
   page,
@@ -168,6 +217,9 @@ test("screen once, retry save with same ID, view missing overlay, and download a
   await expect(
     page.locator(".score").getByText("64.0%", { exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Potential dyslexia" }),
+  ).toBeVisible();
   const enlarge = page.getByRole("button", { name: "Enlarge selected image" });
   await enlarge.click();
   await expect(page.getByRole("dialog", { name: "Original" })).toBeVisible();
@@ -180,10 +232,28 @@ test("screen once, retry save with same ID, view missing overlay, and download a
   await expect(
     page.getByRole("tab", { name: "Grad-CAM", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
+  expect(
+    await page
+      .getByRole("tabpanel")
+      .evaluate((panel) => panel.getAnimations().length),
+  ).toBe(0);
+  await original.click();
+  await page.evaluate(() => {
+    window.previewTransitions = [];
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (frames, options) {
+      if (this.matches('[role="tabpanel"]'))
+        window.previewTransitions.push(this.id);
+      return animate.call(this, frames, options);
+    };
+  });
   await page.getByRole("tab", { name: "Grad-CAM", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Grad-CAM is unavailable." }),
   ).toBeVisible();
+  expect(await page.evaluate(() => window.previewTransitions)).toEqual([
+    await page.getByRole("tabpanel").getAttribute("id"),
+  ]);
   await page.getByRole("button", { name: "Save result", exact: true }).click();
   await expect(page.getByRole("button", { name: "Retry save" })).toBeVisible();
   await page.getByRole("button", { name: "Retry save" }).click();
@@ -191,6 +261,7 @@ test("screen once, retry save with same ID, view missing overlay, and download a
   expect(screens).toBe(1);
   expect(saves).toHaveLength(2);
   expect(saves[0].id).toBe(saves[1].id);
+  expect(saves[0].category).toBe("Elevated");
   expect(saves[0].original_image_base64).toBeNull();
   await page
     .getByRole("link", { name: "Generate report", exact: true })
@@ -267,7 +338,18 @@ test("retained image and owner-scoped saved detail survive a reload", async ({
 }) => {
   let saved = null;
   await page.route("**/api/v1/screen?*", (route) =>
-    route.fulfill({ json: fixture }),
+    route.fulfill({
+      json: {
+        ...fixture,
+        risk_score: 0.34,
+        risk_percentage: 34,
+        risk_category: "Typical",
+        screening_classification:
+          "No Elevated Screening Signal Detected (Typical Pattern)",
+        uncertainty_band: { low: 0.3, high: 0.4, std: 0.04, spread: 0.1 },
+        per_fold_predictions: [0.3, 0.32, 0.34, 0.34, 0.4],
+      },
+    }),
   );
   await page.route("**/rest/v1/screenings*", (route) => {
     expect(
@@ -293,16 +375,27 @@ test("retained image and owner-scoped saved detail survive a reload", async ({
   await page
     .getByRole("button", { name: "Run screening", exact: true })
     .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Normal" }),
+  ).toBeVisible();
+  await expect(page.getByText(/does not rule out dyslexia/)).toBeVisible();
   await page
     .getByRole("checkbox", { name: "Retain original and explanation images" })
     .check();
   await page.getByRole("button", { name: "Save result", exact: true }).click();
   await expect(page.getByText("Result saved to history")).toBeVisible();
+  expect(saved.category).toBe("Typical");
   expect(saved["original_image_base64"]).toContain("data:image/png;base64,");
   await page.goto("/history");
+  await expect(
+    page.getByRole("link", { name: /handwriting.png.*Normal/ }),
+  ).toBeVisible();
   await page.getByRole("link", { name: /handwriting.png/ }).click();
   await expect(
     page.getByText("Saved screening", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Normal" }),
   ).toBeVisible();
   await expect(
     page.getByRole("img", {
@@ -361,6 +454,10 @@ test("invalid credentials, signup confirmation, and password recovery show real 
   await page.getByLabel("Email address").fill("reviewer@example.test");
   await page.getByRole("button", { name: "Send recovery link" }).click();
   await expect(page.getByRole("status")).toContainText("password reset link");
+  await page.screenshot({
+    path: `shots/recovery-${page.viewportSize().width}.png`,
+    animations: "disabled",
+  });
 });
 test("the original page URLs remain separate and account navigation uses the new designs", async ({
   page,
@@ -425,6 +522,113 @@ async function expectRouteArtwork(page, selector, name) {
     )
     .toMatch(new RegExp(`^/assets/images/${name}-(640|1024)\\.webp$`));
 }
+test("public, account, and workspace routes reflow from 320px to desktop", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "This test sets each viewport explicitly.");
+  test.setTimeout(120_000);
+  const viewports = [
+    { width: 320, height: 640 },
+    { width: 640, height: 900 },
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1440, height: 900 },
+  ];
+  const publicRoutes = [
+    ["/", "Handwriting screening for educators."],
+    ["/login", "Welcome back."],
+    ["/signup", "Create your workspace."],
+    ["/forgot-password", "Reset your password."],
+    ["/reset-password", "Choose a new password."],
+    ["/auth/callback", "Check your sign-in link"],
+    ["/missing", "This page isn't in the workspace."],
+  ];
+  const workspaceRoutes = [
+    ["/dashboard", "Every page deserves a closer look."],
+    ["/upload", "New screening"],
+    ["/processing", "No screening in progress."],
+    ["/result", "No screening result loaded."],
+    ["/history", "Screening history"],
+    ["/report", "Screening report"],
+    ["/settings", "Settings"],
+  ];
+  const checkLayout = async (routes) => {
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport);
+      for (const [path, heading] of routes) {
+        await test.step(`${path} at ${viewport.width}px`, async () => {
+          await page.goto(path);
+          await expect(
+            page.getByRole("heading", { level: 1, name: heading }),
+          ).toBeVisible();
+          const overflow = await page.evaluate(() => ({
+            document: document.documentElement.scrollWidth - innerWidth,
+            panels: [
+              ...document.querySelectorAll(
+                ".record-row, .review-panel, .report-document, .settings-section, .result-overview",
+              ),
+            ]
+              .filter(
+                (element) => element.scrollWidth > element.clientWidth + 1,
+              )
+              .map((element) => element.className),
+          }));
+          expect.soft(overflow.document).toBeLessThanOrEqual(1);
+          expect.soft(overflow.panels).toEqual([]);
+          await page.screenshot({
+            path: `shots/responsive/${path.slice(1).replaceAll("/", "-") || "landing"}-${viewport.width}.png`,
+            animations: "disabled",
+          });
+        });
+      }
+    }
+  };
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const menu = page.getByRole("navigation", { name: "Mobile navigation" });
+  const signIn = menu.getByRole("link", { name: "Sign in" });
+  await signIn.scrollIntoViewIfNeeded();
+  await expect(signIn).toBeInViewport({ ratio: 1 });
+  await page.screenshot({
+    path: "shots/responsive/landscape-menu-844.png",
+    animations: "disabled",
+  });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect(menu).toHaveCount(0);
+  await expect(page.locator(".public-page main")).not.toHaveAttribute("inert");
+  await checkLayout(publicRoutes);
+  await login(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  const openNav = page.getByRole("button", { name: "Open navigation" });
+  await openNav.click();
+  await expect(page.locator(".app-main")).toHaveAttribute("inert", "");
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await expect(page.locator(".app-main")).not.toHaveAttribute("inert");
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(openNav).toBeVisible();
+  const filename = `handwriting-${"long-sample-".repeat(6)}.png`;
+  const saved = {
+    ...fixture,
+    id,
+    subject: filename,
+    filename,
+    category: "Elevated",
+    created_at: "2026-11-19T09:00:00Z",
+  };
+  await page.route("**/rest/v1/screenings*", (route) => {
+    const isDetail = new URL(route.request().url()).searchParams.has("id");
+    return route.fulfill({
+      json: isDetail ? saved : [saved],
+      headers: { "content-range": "0-0/1" },
+    });
+  });
+  await checkLayout([
+    ...workspaceRoutes,
+    [`/result/${id}`, "Potential dyslexia"],
+  ]);
+});
 test("upload, processing, and result have their own URLs without duplicate inference", async ({
   page,
 }) => {
@@ -436,7 +640,14 @@ test("upload, processing, and result have their own URLs without duplicate infer
   await page.route("**/api/v1/screen?*", async (route) => {
     requests++;
     await hold;
-    await route.fulfill({ json: fixture });
+    await route.fulfill({
+      json: {
+        ...fixture,
+        gradcam_overlay_base64: `data:image/png;base64,${png}`,
+        uncertainty_band: { low: 0.09, high: 0.999, std: 0.32, spread: 0.909 },
+        per_fold_predictions: [0.09, 0.51, 0.7, 0.901, 0.999],
+      },
+    });
   });
   await login(page);
   await upload(page);
@@ -447,9 +658,28 @@ test("upload, processing, and result have their own URLs without duplicate infer
   await expect(
     page.getByRole("heading", { name: "A closer look is underway." }),
   ).toBeVisible();
+  await page.screenshot({
+    path: `shots/active-processing-${page.viewportSize().width}.png`,
+    animations: "disabled",
+  });
   release();
   await expect(page).toHaveURL(/\/result$/);
   await expect(page.locator(".score")).toContainText("64.0%");
+  await page.screenshot({
+    path: `shots/active-result-${page.viewportSize().width}.png`,
+    animations: "disabled",
+  });
+  await page.getByRole("tab", { name: "Grad-CAM", exact: true }).click();
+  const explanation = page.getByRole("tabpanel", { name: "Grad-CAM" });
+  await expect(explanation.getByText("Relative contribution")).toBeVisible();
+  await expect(explanation).toContainText(
+    "Model folds disagreed · 9.0% – 99.9%",
+  );
+  await expect(explanation).toContainText("first model fold");
+  await explanation.screenshot({
+    path: `shots/gradcam-panel-${page.viewportSize().width}.png`,
+    animations: "disabled",
+  });
   expect(requests).toBe(1);
   await page
     .getByRole("link", { name: "Generate report", exact: true })

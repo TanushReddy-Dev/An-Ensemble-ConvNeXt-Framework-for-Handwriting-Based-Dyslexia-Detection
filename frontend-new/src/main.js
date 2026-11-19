@@ -39,7 +39,7 @@ const root = document.getElementById("root");
 const landing = root.querySelector(".public-page");
 let mountedLanding = false;
 let routeKey;
-let renderedPath;
+let renderedRoute;
 let scope = newView();
 const publicTitle = document.title;
 const accountPaths = new Set([
@@ -68,6 +68,7 @@ const redirects = new Map([
 ]);
 
 const toggle = landing.querySelector(".public-menu-toggle");
+const compactNavigation = matchMedia("(max-width: 1023px)");
 const mobileMenu = document.createElement("nav");
 mobileMenu.className = "public-mobile-menu";
 mobileMenu.setAttribute("aria-label", "Mobile navigation");
@@ -101,6 +102,10 @@ landing.addEventListener("keydown", (event) => {
 mobileMenu.addEventListener("click", (event) => {
   if (event.target.closest("a")) toggleMenu(false);
 });
+compactNavigation.addEventListener("change", ({ matches }) => {
+  if (!matches) toggleMenu(false);
+  redraw();
+});
 
 function render() {
   const { pathname, search, hash } = useLocation();
@@ -122,8 +127,8 @@ function render() {
     document.documentElement.removeAttribute("data-workspace-route");
     if (mountedLanding) return;
     if (!landing.isConnected) root.replaceChildren(landing);
-    if (renderedPath) revealPage(landing.querySelector("main"));
-    renderedPath = pathname;
+    if (renderedRoute) revealPage(landing.querySelector("main"));
+    renderedRoute = pathname;
     mountedLanding = true;
     landing.setAttribute("data-taste-ready", "");
     document.dispatchEvent(
@@ -167,7 +172,7 @@ function render() {
   try {
     const content = inView(scope, () => {
       if (accountPaths.has(pathname)) return AuthPage();
-      if (page) return AppLayout(page);
+      if (page) return AppLayout(page, compactNavigation.matches);
       return el(
         "div",
         { className: "setup-page" },
@@ -186,11 +191,23 @@ function render() {
     const beforeMotion = captureMotionState(root);
     updateChildren(root, content);
     presentDialogs(root);
-    revealMotionState(root, beforeMotion);
-    if (renderedPath && renderedPath !== pathname) {
-      revealPage(root.querySelector("#content") || root.firstElementChild);
+    const route = pathname + search;
+    const pageContent = root.querySelector("#content, .setup-page");
+    const pageChanged = Boolean(renderedRoute && renderedRoute !== route);
+    revealMotionState(root, beforeMotion, pageChanged);
+    // Session restoration can render a loader before the redirect or final page.
+    // Keep the previous route until there is an actual destination to reveal.
+    if (pageContent) {
+      if (pageChanged) {
+        const accountEntry =
+          renderedRoute === "/" && accountPaths.has(pathname);
+        revealPage(pageContent.closest(".auth-layout") || pageContent, {
+          accountEntry,
+        });
+        if (!changed) pageContent.focus({ preventScroll: true });
+      }
+      renderedRoute = route;
     }
-    renderedPath = pathname;
     if (changed) {
       if (!hash) window.scrollTo(0, 0);
       root.querySelector("#content")?.focus({ preventScroll: true });

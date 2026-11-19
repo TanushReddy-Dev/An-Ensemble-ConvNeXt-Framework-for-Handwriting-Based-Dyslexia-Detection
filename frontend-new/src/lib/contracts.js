@@ -38,6 +38,11 @@ export const disclaimer =
 export function categoryFor(result) {
   return result.risk_category === "Elevated Risk" ? "Elevated" : "Typical";
 }
+export function screeningOutcome(category) {
+  if (category === "Elevated") return "Potential dyslexia";
+  if (category === "Typical") return "Normal";
+  return "Unavailable";
+}
 export function resultFromRecord(row) {
   const category = z.enum(["Elevated", "Typical"]).parse(row.category);
   return resultSchema.parse({

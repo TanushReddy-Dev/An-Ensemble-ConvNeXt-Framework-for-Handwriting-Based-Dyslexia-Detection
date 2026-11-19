@@ -175,7 +175,7 @@ class DyslexiaScreeningEngine:
         heatmap_overlay = self._generate_attention_overlay(padded_arr, mean_attn)
 
         # Compute Grad-CAM class activation mapping
-        gradcam_overlay = self._compute_gradcam(pil_img, padded_arr, page_tensor)
+        gradcam_overlay = self._compute_gradcam(pil_img, page_tensor)
 
         # Unified Stroke Integrated Gradients & Character Anomaly Detection
         stroke_info: Dict[str, Any] = {}
@@ -253,7 +253,6 @@ class DyslexiaScreeningEngine:
     def _compute_gradcam(
         self,
         pil_img: Image.Image,
-        padded_arr: np.ndarray,
         page_tensor: torch.Tensor,
     ) -> Image.Image:
         """Compute Grad-CAM activation heatmap from the primary PageModel."""
@@ -296,36 +295,29 @@ class DyslexiaScreeningEngine:
         weights = grad.mean(dim=(2, 3), keepdim=True)
         cam_patches = torch.nn.functional.relu((weights * act).sum(dim=1))
 
-        patch_size = 224
-        stride = 144
-        full_cam = torch.zeros((512, 512))
-        weights_map = torch.zeros((512, 512))
+        target_h, target_w = page_tensor.shape[-2:]
+        regions = preprocess.page_patch_regions(target_h, target_w)
+        top, left, bottom, right = regions[0]
+        patch_h, patch_w = bottom - top, right - left
+        full_cam = torch.zeros((target_h, target_w))
+        weights_map = torch.zeros_like(full_cam)
 
-        # 2D Hann cosine window for smooth boundary apodization (zero patch seam artifacts)
-        hann_1d = np.hanning(patch_size)
-        hann_2d = torch.from_numpy(np.outer(hann_1d, hann_1d)).float()
-
+        # Taper overlapping patches before averaging their heatmaps.
+        hann_2d = torch.from_numpy(np.outer(np.hanning(patch_h), np.hanning(patch_w))).float()
         cam_upsampled = torch.nn.functional.interpolate(
-            cam_patches.unsqueeze(1), size=(patch_size, patch_size), mode="bicubic", align_corners=False
-        ).squeeze(1)
+            cam_patches.unsqueeze(1), size=(patch_h, patch_w), mode="bicubic", align_corners=False
+        ).squeeze(1).detach().cpu()
 
-        p_idx = 0
-        for y in range(0, 512 - patch_size + 1, stride):
-            for x in range(0, 512 - patch_size + 1, stride):
-                if p_idx < len(cam_upsampled):
-                    patch_cam = cam_upsampled[p_idx].detach().cpu()
-                    full_cam[y : y + patch_size, x : x + patch_size] += patch_cam * hann_2d
-                    weights_map[y : y + patch_size, x : x + patch_size] += hann_2d
-                    p_idx += 1
+        for (top, left, bottom, right), patch_cam in zip(regions, cam_upsampled, strict=True):
+            full_cam[top:bottom, left:right] += patch_cam * hann_2d
+            weights_map[top:bottom, left:right] += hann_2d
 
         full_cam = full_cam / torch.clamp(weights_map, min=1e-5)
         cam_np = full_cam.numpy()
-        cam_np = (cam_np - cam_np.min()) / (cam_np.max() - cam_np.min() + 1e-6)
 
-        # Unpad back to original image dimensions
-        img_rgb = np.array(pil_img)
+        # Unpad back to original image dimensions.
+        img_rgb = np.asarray(pil_img, dtype=np.float32)
         H, W = img_rgb.shape[:2]
-        target_h, target_w = config.PAGE_SIZE
         scale = min(target_h / H, target_w / W)
         new_h, new_w = int(H * scale), int(W * scale)
         y_off = (target_h - new_h) // 2
@@ -333,25 +325,19 @@ class DyslexiaScreeningEngine:
 
         cam_active = cam_np[y_off : y_off + new_h, x_off : x_off + new_w]
         cam_orig = cv2.resize(cam_active, (W, H), interpolation=cv2.INTER_CUBIC)
+        # Resize can introduce small negative values around positive regions.
+        np.maximum(cam_orig, 0.0, out=cam_orig)
 
-        # Gentle Gaussian smoothing for organic, continuous activation contours
-        ksize = max(15, (int(min(H, W) * 0.08) // 2) * 2 + 1)
-        cam_smoothed = cv2.GaussianBlur(cam_orig, (ksize, ksize), 0)
-        cam_smoothed = (cam_smoothed - cam_smoothed.min()) / (cam_smoothed.max() - cam_smoothed.min() + 1e-6)
+        ksize = max(5, (int(min(H, W) * 0.04) // 2) * 2 + 1)
+        smoothed = cv2.GaussianBlur(cam_orig, (ksize, ksize), 0)
+        low, high = float(smoothed.min()), float(smoothed.max())
+        if not np.isfinite(low) or not np.isfinite(high) or high - low <= 1e-6:
+            return pil_img.copy()
 
-        # Soft transparency mask: low activations (< 0.15) fade completely to transparent,
-        # ensuring the white paper background stays clean without bluish/purple cast.
-        cam_thresh = 0.15
-        alpha = np.clip((cam_smoothed - cam_thresh) / (1.0 - cam_thresh), 0.0, 1.0)
-        alpha = (alpha ** 1.3) * 0.65  # Max opacity 65% over high-activation hotspots
-        alpha_3d = np.repeat(alpha[:, :, np.newaxis], 3, axis=2)
-
-        cmap = plt.get_cmap("jet")
-        heat_rgb = (cmap(cam_smoothed)[:, :, :3] * 255.0)
-
-        # Organic alpha-composited blend
-        blended = (img_rgb.astype(np.float32) * (1.0 - alpha_3d) + heat_rgb * alpha_3d).astype(np.uint8)
-
+        relative = (smoothed - low) / (high - low)
+        alpha = np.clip((relative - 0.15) / 0.85, 0.0, 1.0)[..., None] ** 1.3 * 0.42
+        cobalt = np.array([36, 66, 205], dtype=np.float32)
+        blended = np.rint(img_rgb * (1.0 - alpha) + cobalt * alpha).astype(np.uint8)
         return Image.fromarray(blended)
 
     def _compute_page_stroke_attributions(

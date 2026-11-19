@@ -18,7 +18,13 @@ import { useWorkflow } from "./Workflow.js";
 import { useAuth } from "../auth/AuthProvider.js";
 import { detail } from "../../lib/records.js";
 import { report, validateImage } from "../../lib/api.js";
-import { disclaimer, message, percent } from "../../lib/contracts.js";
+import {
+  categoryFor,
+  disclaimer,
+  message,
+  percent,
+  screeningOutcome,
+} from "../../lib/contracts.js";
 export default function Report() {
   const { state } = useWorkflow();
   const { session } = useAuth();
@@ -172,8 +178,9 @@ export default function Report() {
           el(
             "h3",
             null,
-            result?.screening_classification ||
-              "A screening result will accompany the generated report.",
+            result
+              ? screeningOutcome(record ? result.category : categoryFor(result))
+              : "A screening result will accompany the generated report.",
           ),
           result?.risk_percentage != null &&
             el(
