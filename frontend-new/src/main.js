@@ -24,7 +24,7 @@ import {
   revealPage,
 } from "./ui/motion.js";
 import { List, X } from "./ui/icons.js";
-import { Brand } from "./components/ui/Common.js";
+import ErrorPage from "./components/ui/ErrorPage.js";
 import AppLayout from "./components/layout/AppLayout.js";
 import AuthPage from "./features/auth/AuthPage.js";
 import { restoreSession, useAuth } from "./features/auth/AuthProvider.js";
@@ -40,6 +40,7 @@ const landing = root.querySelector(".public-page");
 let mountedLanding = false;
 let routeKey;
 let renderedRoute;
+let failedRoute;
 let scope = newView();
 const publicTitle = document.title;
 const accountPaths = new Set([
@@ -109,6 +110,10 @@ compactNavigation.addEventListener("change", ({ matches }) => {
 
 function render() {
   const { pathname, search, hash } = useLocation();
+  const route = pathname + search;
+  if (failedRoute === route) return;
+  failedRoute = undefined;
+
   const alias = redirects.get(pathname);
   if (alias) return navigate(alias, { replace: true });
   if (/^\/app\/screenings\/[^/]+$/.test(pathname)) {
@@ -173,26 +178,13 @@ function render() {
     const content = inView(scope, () => {
       if (accountPaths.has(pathname)) return AuthPage();
       if (page) return AppLayout(page, compactNavigation.matches);
-      return el(
-        "div",
-        { className: "setup-page" },
-        el(Brand),
-        el("p", { className: "mono" }, "404"),
-        el("h1", {}, "This page isn't in the workspace."),
-        el("p", {}, "Return to the overview and choose your next step."),
-        el(
-          "a",
-          { className: "btn btn--primary", href: "/" },
-          "Back to overview",
-        ),
-      );
+      return el(ErrorPage);
     });
     if (pathname !== useLocation().pathname) return;
     const beforeMotion = captureMotionState(root);
     updateChildren(root, content);
     presentDialogs(root);
-    const route = pathname + search;
-    const pageContent = root.querySelector("#content, .setup-page");
+    const pageContent = root.querySelector("#content");
     const pageChanged = Boolean(renderedRoute && renderedRoute !== route);
     revealMotionState(root, beforeMotion, pageChanged);
     // Session restoration can render a loader before the redirect or final page.
@@ -213,25 +205,10 @@ function render() {
       root.querySelector("#content")?.focus({ preventScroll: true });
     }
   } catch {
-    updateChildren(
-      root,
-      el(
-        "div",
-        { className: "setup-page" },
-        el(Brand),
-        el("h1", {}, "The workspace could not open."),
-        el(
-          "p",
-          {},
-          "Reload to try again. Unsaved screening work will be lost.",
-        ),
-        el(
-          "button",
-          { className: "btn btn--primary", onClick: () => location.reload() },
-          "Reload workspace",
-        ),
-      ),
-    );
+    failedRoute = route;
+    document.title = "Workspace unavailable | NeuroWrite AI";
+    updateChildren(root, el(ErrorPage, { failed: true }));
+    root.querySelector("#content")?.focus({ preventScroll: true });
   }
 }
 

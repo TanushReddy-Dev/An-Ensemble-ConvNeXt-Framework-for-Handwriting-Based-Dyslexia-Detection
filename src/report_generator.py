@@ -11,15 +11,15 @@ import io
 import sys
 from datetime import datetime
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from typing import Any, Dict, Optional, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -77,7 +77,7 @@ def generate_screening_pdf(
     examiner_name: str = "Educational Specialist",
     output_path: Optional[Union[str, Path]] = None,
 ) -> bytes:
-    """Generate a clean, standardized 1-page clinical screening report PDF."""
+    """Generate an experimental screening summary using the backend outcome."""
     pdf_buffer = io.BytesIO()
     doc_target = str(output_path) if output_path else pdf_buffer
 
@@ -148,8 +148,17 @@ def generate_screening_pdf(
     story = []
 
     # 1. Header & Title Block
-    story.append(Paragraph("Handwriting-Based Dyslexia & Dysgraphia Screening Summary", t_title))
-    story.append(Paragraph("AI-Assisted Multi-Branch Neuromotor Pattern Assessment Report", t_subtitle))
+    logo = Path(__file__).resolve().parents[1] / "frontend-new/public/assets/brand/neurowrite-mark.png"
+    title = [
+        Paragraph("NeuroWrite AI", t_title),
+        Paragraph("Handwriting screening summary", t_subtitle),
+    ]
+    if logo.is_file():
+        header = Table([[RLImage(str(logo), width=38, height=38), title]], colWidths=[52, 488])
+        header.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+        story.append(header)
+    else:
+        story.extend(title)
     story.append(Spacer(1, 6))
 
     # 2. Mandatory Disclaimer Box
@@ -172,14 +181,14 @@ def generate_screening_pdf(
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
     meta_data = [
         [
-            Paragraph(f"<b>Student ID:</b> {student_id}", t_body),
+            Paragraph(f"<b>Student ID:</b> {escape(student_id)}", t_body),
             Paragraph(f"<b>Date:</b> {now_str}", t_body),
-            Paragraph(f"<b>Examiner:</b> {examiner_name}", t_body),
+            Paragraph(f"<b>Examiner:</b> {escape(examiner_name)}", t_body),
         ],
         [
-            Paragraph(f"<b>Analysis Mode:</b> {result.get('input_type', 'Page').title()} Assessment", t_body),
-            Paragraph(f"<b>Neural Backbone:</b> {result.get('backbone', 'ConvNeXt-Tiny')}", t_body),
-            Paragraph(f"<b>Ensemble Size:</b> {result.get('models_in_ensemble', 5)} Fold Models", t_body),
+            Paragraph(f"<b>Input:</b> {escape(result['input_type'].title())}", t_body),
+            Paragraph(f"<b>Model:</b> {escape(result['backbone'])}", t_body),
+            Paragraph(f"<b>Ensemble size:</b> {result['models_in_ensemble']} folds", t_body),
         ]
     ]
     meta_table = Table(meta_data, colWidths=[180, 180, 180])
@@ -193,23 +202,31 @@ def generate_screening_pdf(
     story.append(Spacer(1, 8))
 
     # 4. Screening Score & Classification Card
-    risk_pct = result.get("risk_percentage", 50.0)
-    is_elevated = result.get("risk_category") == "Elevated Risk" or risk_pct >= 50.0
-    band = result.get("uncertainty_band", {"std": 0.02, "low": 0.48, "high": 0.52})
+    risk_pct = float(result["risk_percentage"])
+    category = result["risk_category"]
+    if category not in {"Elevated Risk", "Typical"}:
+        raise ValueError("Unknown screening category")
+    is_elevated = category == "Elevated Risk"
+    band = result["uncertainty_band"]
 
     bg_color = c_red_bg if is_elevated else c_green_bg
     text_color = c_red_text if is_elevated else c_green_text
-    badge_label = "ELEVATED NEUROMOTOR RISK SIGNAL" if is_elevated else "TYPICAL HANDWRITING PATTERN"
+    badge_label = "Potential dyslexia" if is_elevated else "Normal"
+    interpretation = (
+        "The model flagged this sample for professional follow-up."
+        if is_elevated
+        else "The model found no elevated signal in this sample. This does not rule out dyslexia."
+    )
 
     t_score = ParagraphStyle("RScore", parent=t_body_bold, fontSize=16, leading=20, textColor=text_color, alignment=1)
 
     score_card = [
         [
-            Paragraph(f"<b>Screening Risk</b><br/><font size=18>{risk_pct:.1f}%</font><br/><font size=7.5>Spread: ±{band.get('std',0)*100:.1f}%</font>", t_score),
+            Paragraph(f"<b>Model screening score</b><br/><font size=18>{risk_pct:.1f}%</font>", t_score),
             Paragraph(
-                f"<b>STATUS: {badge_label}</b><br/>"
-                f"<b>Uncertainty Spread:</b> [{band.get('low',0)*100:.1f}%, {band.get('high',0)*100:.1f}%] (±{band.get('std',0)*100:.1f}%)<br/>"
-                f"<font size=8>{'Handwriting motor patterns exhibit irregular baseline drift, stroke tremors, or character reversals. Follow-up specialist evaluation advised.' if is_elevated else 'Stroke formations and pen pressure continuity match typical handwriting motor development.'}</font>",
+                f"<b>{badge_label}</b><br/>"
+                f"Fold range: {band['low'] * 100:.1f}%–{band['high'] * 100:.1f}%<br/>"
+                f"<font size=8>{interpretation}</font>",
                 t_body
             ),
         ]
@@ -225,7 +242,7 @@ def generate_screening_pdf(
     story.append(Spacer(1, 8))
 
     # 5. Visual Salience / Attention Evidence
-    story.append(Paragraph("Visual Evidence: Handwriting Sample & Attention Salience Map", t_body_bold))
+    story.append(Paragraph("Handwriting sample and model explanation", t_body_bold))
     story.append(Spacer(1, 3))
 
     # Convert original and overlay to temporary in-memory PNGs
@@ -236,33 +253,28 @@ def generate_screening_pdf(
     else:
         orig_pil = original_image.convert("RGB")
 
-    # Resize to uniform display size (e.g. 240x240)
-    display_w, display_h = 240, 240
-    orig_resized = orig_pil.resize((display_w, display_h), Image.LANCZOS)
-    orig_buf = io.BytesIO()
-    orig_resized.save(orig_buf, format="PNG")
-    orig_buf.seek(0)
-    rl_orig = RLImage(orig_buf, width=2.6 * inch, height=2.6 * inch)
+    def report_image(image):
+        preview = ImageOps.contain(image.convert("RGB"), (350, 350), Image.Resampling.LANCZOS)
+        stream = io.BytesIO()
+        preview.save(stream, format="PNG")
+        stream.seek(0)
+        width, height = preview.size
+        scale = 2.6 * inch / max(width, height)
+        return RLImage(stream, width=width * scale, height=height * scale)
 
-    # Attention overlay
-    if "attention_overlay" in result and result["attention_overlay"] is not None:
-        overlay_pil = Image.fromarray(result["attention_overlay"].astype(np.uint8))
-        overlay_resized = overlay_pil.resize((display_w, display_h), Image.LANCZOS)
-        over_buf = io.BytesIO()
-        overlay_resized.save(over_buf, format="PNG")
-        over_buf.seek(0)
-        rl_over = RLImage(over_buf, width=2.6 * inch, height=2.6 * inch)
+    gradcam = result.get("gradcam_overlay")
+    if isinstance(gradcam, Image.Image) and result.get("gradcam_target") == "ensemble_mean":
+        explanation = report_image(gradcam)
+        caption = "Shading shows relative positive contributions to the average model score."
     else:
-        rl_over = rl_orig
+        explanation = Paragraph("An ensemble overlay was unavailable.", t_body)
+        caption = ""
 
     evidence_table = Table(
         [
-            [Paragraph("<b>Submitted Handwriting Sample</b>", t_body), Paragraph("<b>Attention Salience Heatmap Overlay</b>", t_body)],
-            [rl_orig, rl_over],
-            [
-                Paragraph("Original unadjusted student handwriting input.", t_body),
-                Paragraph("Warmer yellow/red regions highlight areas with highest motor anomaly weight.", t_body),
-            ]
+            [Paragraph("<b>Submitted handwriting</b>", t_body), Paragraph("<b>Ensemble Grad-CAM</b>", t_body)],
+            [report_image(orig_pil), explanation],
+            ["", Paragraph(caption, t_body)],
         ],
         colWidths=[270, 270],
     )
@@ -276,14 +288,11 @@ def generate_screening_pdf(
     story.append(evidence_table)
     story.append(Spacer(1, 8))
 
-    # 6. Clinical & Educational Interpretation Notes
-    notes_html = (
-        "<b>Clinical & Educational Interpretation Notes:</b><br/>"
-        "• <b>Spatial Organization:</b> Irregular baseline drift, excessive inter-word gaps, and margin compression often reflect fine-motor coordination difficulties.<br/>"
-        "• <b>Stroke Dynamics:</b> Abrupt pen lifts, tremors at stroke terminations, and variable pen pressure correlate with handwriting dysfluency.<br/>"
-        "• <b>Screening Next Steps:</b> If the risk score is elevated (> 50%), this summary should be shared with the school's Special Educational Needs Coordinator (SENCo) or a licensed learning specialist for formal psychometric evaluation."
-    )
-    story.append(Paragraph(notes_html, t_body))
+    story.append(Paragraph(
+        "The fold range shows variation across models. The score and overlay describe "
+        "model behavior for this sample. A diagnosis requires a formal assessment.",
+        t_body,
+    ))
     story.append(Spacer(1, 8))
 
     # 7. Signature & Professional Sign-off

@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "../../ui/queries.js";
 import {
   ArrowLeft,
   DownloadSimple,
-  FileText,
   Info,
   CheckCircle,
 } from "../../ui/icons.js";
@@ -126,11 +125,10 @@ export default function Report() {
         el(
           "div",
           { className: "report-document-head" },
-          el(
-            "span",
-            { className: "report-symbol" },
-            el(FileText, { size: 28, weight: "light" }),
-          ),
+          el("span", {
+            className: "brand-mark",
+            "aria-hidden": "true",
+          }),
           el(
             "span",
             null,
@@ -209,7 +207,7 @@ export default function Report() {
             "p",
             null,
             el(CheckCircle, { size: 18 }),
-            "Available model explanations",
+            "Ensemble Grad-CAM when available",
           ),
           el(
             "p",

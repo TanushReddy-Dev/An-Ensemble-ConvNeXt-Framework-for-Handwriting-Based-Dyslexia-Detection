@@ -29,5 +29,6 @@ Unauthenticated visits go to `/login` and preserve the intended destination.
 Without configured account services, the complete login/signup designs remain
 visible with an honest setup notice. No fake account or production demo mode is added.
 
-No legacy frontend files, backend source, or database schema were changed.
-No commits, pushes, or deployment are performed by the assistant.
+Unknown routes show the branded 404 page. A render failure shows a recovery
+page with reload and overview actions. The production bundle also contains
+standalone `404.html` and `500.html` documents for the static host.

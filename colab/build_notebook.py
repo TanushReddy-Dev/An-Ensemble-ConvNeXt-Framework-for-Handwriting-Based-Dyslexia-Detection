@@ -1,10 +1,25 @@
 """Build the complete, self-contained Google Colab notebook for Dyslexia Screening (Phase 1)."""
 
+import argparse
 import json
 from pathlib import Path
 
 
-def generate_notebook():
+COLAB = Path(__file__).resolve().parent
+SOURCE_NOTEBOOK = COLAB / "Dyslexia_Screening_Colab.ipynb"
+
+
+def generate_notebook(out_path):
+    training_notebook = json.loads(SOURCE_NOTEBOOK.read_text(encoding="utf-8"))
+    embedded_sources = {}
+    for cell in training_notebook["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+        source = "".join(cell["source"])
+        first_line = source.splitlines()[0] if source else ""
+        if first_line.startswith("%%writefile src/"):
+            embedded_sources[first_line.removeprefix("%%writefile src/")] = source
+
     nb = {
         "nbformat": 4,
         "nbformat_minor": 0,
@@ -133,13 +148,9 @@ Write the modular Python source files into `src/`.""")
     ]
 
     for fname in src_files:
-        fpath = Path("src") / fname
-        if fpath.exists():
-            content = fpath.read_text(encoding="utf-8")
-            cell_code = f"%%writefile src/{fname}\n{content}"
-            add_code(cell_code)
-        else:
-            raise FileNotFoundError(f"Missing required source file: {fpath}")
+        if fname not in embedded_sources:
+            raise ValueError(f"Missing training cell for {fname} in {SOURCE_NOTEBOOK}")
+        add_code(embedded_sources[fname])
 
     # ─────────────────────────────────────────────────────────────
     # 4. Checkpoint CP0: Data Audit & Manifest Verification
@@ -650,11 +661,9 @@ Train modern **ConvNeXt-Tiny** across the 5 grouped folds on GPU and benchmark:
 
 Generates a publication-ready comparative Markdown report (`outputs/reports/comparative_ablation.md`) and downloads the checkpoints!""")
 
-    ablation_script = Path("colab/run_comparative_ablation.py").read_text(encoding="utf-8")
-    add_code(f"""{ablation_script}
-run_comparative_benchmark()""")
+    ablation_script = (COLAB / "run_comparative_ablation.py").read_text(encoding="utf-8")
+    add_code(ablation_script)
 
-    out_path = Path("colab/Dyslexia_Screening_Colab.ipynb")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(nb, f, indent=2)
@@ -662,4 +671,6 @@ run_comparative_benchmark()""")
 
 
 if __name__ == "__main__":
-    generate_notebook()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", required=True, type=Path)
+    generate_notebook(parser.parse_args().output)

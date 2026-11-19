@@ -9,10 +9,9 @@ This document makes the visual and interaction decisions for those requirements.
 
 ## Visual refinement
 
-NeuroWrite AI is the established product name. A cobalt pen nib inside a ring
-is shared across the landing page, account screens, workspace, and browser tab.
-The same mark has a 32px PNG fallback and a 180px Apple touch icon. Page titles
-identify the active screen and the share card uses the live landing design.
+NeuroWrite AI uses the supplied teal and orange brain-and-pen mark on the landing,
+account, workspace, and recovery screens and the PDF. It has a 32px PNG fallback
+and a 180px Apple touch icon. Page titles identify the active screen.
 
 The workspace preview marks the image-selection step in the screening workflow.
 
@@ -151,8 +150,7 @@ produced this baseline:
   A dark footer is the one high-contrast public closing region.
 - Semantic warning/success treatments are restricted to actual states and paired
   with text/icons. They do not become extra decorative brand colors. Verify contrast.
-- The ring mark is a simple brand geometry beside the existing name, without
-  clinical symbolism. Use it for the favicon if no supplied logo supersedes it.
+- Use the supplied mark beside the product name and as the favicon.
 
 The dealt sage ground is recorded for provenance; this plan does not activate a
 second sage palette. The public page keeps flat printed palette surfaces. Likewise
@@ -313,7 +311,7 @@ status. Keep them next to the relevant control and announce status changes acces
 
 ## Assets and implementation handoff
 
-Use the existing name and ring mark. The handwriting still life is served as
+Use the existing name and supplied mark. The handwriting still life is served as
 responsive WebP. The visible product preview uses HTML, and Phosphor supplies the
 interface icons.
 
