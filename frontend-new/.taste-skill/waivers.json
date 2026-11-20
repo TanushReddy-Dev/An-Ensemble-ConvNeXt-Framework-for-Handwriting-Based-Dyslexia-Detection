@@ -1,5 +1,5 @@
 [
   {"check": "text-only", "target": "section#questions", "reason": "This is the open-answer FAQ, which the skill permits to be text-only. It is followed by footer.closing; it is not the closing call to action."},
-  {"check": "copy-headings", "target": "Original image", "reason": "Original image, Grad-CAM, and stroke attribution name the actual views in screening results. The FAQ headings are direct questions naming the relevant screening topics."},
+  {"check": "copy-headings", "target": "Grad-CAM", "reason": "Grad-CAM and stroke attribution name the actual views in screening results. The FAQ headings are direct questions naming the relevant screening topics."},
   {"check": "container-edges", "target": "div#root", "reason": "The browser application root is a transparent wrapper containing the header, main sections, and closing footer. It is not an extra content block or a separate visual layout."}
 ]

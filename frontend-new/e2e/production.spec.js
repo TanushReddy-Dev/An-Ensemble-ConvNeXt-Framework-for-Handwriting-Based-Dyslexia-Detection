@@ -73,10 +73,8 @@ test("the production overview has useful content with JavaScript disabled", asyn
       "Handwriting screening for educators.",
     );
     const artwork = page.getByRole("img", { name: /handwriting sample sheet/ });
-    await expect(
-      page.getByRole("button", { name: "Pause handwriting illustration" }),
-    ).toBeHidden();
-    await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
+    await expect(page.getByRole("slider")).toBeHidden();
+    await expect(page.locator(".lens-treatment")).toBeVisible();
     await expect
       .poll(() =>
         artwork.evaluate((img) =>
@@ -100,48 +98,41 @@ test("the production overview has useful content with JavaScript disabled", asyn
   }
 });
 
-test("the hero scan repeats in view and stops when paused or offscreen", async ({
+test("the landing demo supports the lens, workflow steps, and explanation views", async ({
   page,
 }) => {
-  await page.goto("/");
-  const pause = page.getByRole("button", {
-    name: "Pause handwriting illustration",
-  });
-  const resume = page.getByRole("button", {
-    name: "Resume handwriting illustration",
-  });
-  const sweep = page.locator("[data-scan-pass]");
-  const animationCount = () =>
-    sweep.evaluate((element) => element.getAnimations().length);
-  await expect(pause).toBeVisible();
-  await expect
-    .poll(() =>
-      sweep.evaluate((element) => {
-        const [animation] = element.getAnimations();
-        return animation
-          ? Number(animation.currentTime) -
-              Number(animation.effect.getTiming().duration)
-          : -1;
-      }),
-    )
-    .toBeGreaterThan(200);
-
-  await pause.click();
-  await expect(resume).toBeVisible();
-  await expect.poll(animationCount).toBe(0);
-  await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
-  await resume.click();
-  await expect.poll(animationCount).toBe(1);
-
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await expect.poll(animationCount).toBe(0);
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await expect.poll(animationCount).toBe(1);
-
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(pause).toBeHidden();
-  await expect.poll(animationCount).toBe(0);
-  await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
+  await page.goto("/");
+  const lens = page.locator("[data-review-lens]");
+  const slider = lens.getByRole("slider");
+  await expect(slider).toHaveValue("50");
+  await slider.press("ArrowRight");
+  await expect(slider).toHaveValue("51");
+  await expect(lens).toHaveCSS("--lens-edge", "49%");
+  await lens.getByRole("button", { name: "Original" }).click();
+  await expect(slider).toHaveValue("0");
+  await expect(lens.locator(".lens-divider")).toBeHidden();
+  await lens.getByRole("button", { name: "Review" }).click();
+  await expect(slider).toHaveValue("100");
+  const steps = page.getByRole("group", { name: "Screening workflow" });
+  await steps.getByRole("button", { name: "Screen", exact: true }).click();
+  await expect(
+    page.getByText("Screen the sample", { exact: true }),
+  ).toBeVisible();
+  await steps.getByRole("button", { name: "Review", exact: true }).click();
+  await expect(
+    page.getByText("Review the result", { exact: true }),
+  ).toBeVisible();
+  await steps.getByRole("button", { name: "Choose image" }).click();
+  await expect(
+    page.getByText("Choose a handwriting image", { exact: true }),
+  ).toBeVisible();
+  const views = page.getByRole("group", { name: "Explanation views" });
+  await views.getByRole("button", { name: "Grad-CAM" }).click();
+  await expect(page.locator(".explanation-regions")).toBeVisible();
+  await views.getByRole("button", { name: "Stroke attribution" }).click();
+  await expect(page.locator(".explanation-strokes")).toBeVisible();
+  await expect(page.locator(".explanation-regions")).toBeHidden();
 });
 
 test("the built error pages load the logo and offer recovery without JavaScript", async ({
