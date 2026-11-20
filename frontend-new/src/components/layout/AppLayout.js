@@ -192,7 +192,7 @@ export default function AppLayout(page, compactNavigation) {
       el(
         "footer",
         { className: "app-footer" },
-        el("span", null, "NeuroWrite AI"),
+        el("span", null, "PRISM"),
         el("span", null, "Screening signals for professional review."),
       ),
     ),

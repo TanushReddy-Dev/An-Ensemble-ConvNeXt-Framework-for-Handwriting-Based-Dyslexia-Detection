@@ -4,15 +4,9 @@ import { WarningCircle, ArrowUpRight, CircleNotch } from "../../ui/icons.js";
 export function Brand({ compact = false }) {
   return el(
     Link,
-    { to: "/", className: "brand", "aria-label": "NeuroWrite AI home" },
+    { to: "/", className: "brand", "aria-label": "PRISM home" },
     el("span", { className: "brand-mark", "aria-hidden": "true" }),
-    !compact &&
-      el(
-        "span",
-        null,
-        "NeuroWrite",
-        el("span", { className: "brand-ai" }, " AI"),
-      ),
+    !compact && el("span", null, "PRISM"),
   );
 }
 export function ActionLink({ to, children, secondary = false }) {

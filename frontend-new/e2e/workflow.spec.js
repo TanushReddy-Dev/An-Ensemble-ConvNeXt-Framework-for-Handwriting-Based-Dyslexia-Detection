@@ -250,7 +250,7 @@ test("landing section links scroll, focus the section, and preserve browser hist
   expect(await page.evaluate(() => window.sectionScroll.behavior)).toBe(
     "instant",
   );
-  await page.getByRole("link", { name: "NeuroWrite AI home" }).first().click();
+  await page.getByRole("link", { name: "PRISM home" }).first().click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
@@ -347,7 +347,7 @@ test("screen once, retry save with same ID, view missing overlay, and download a
   await page
     .getByRole("button", { name: "Generate report", exact: true })
     .click();
-  expect((await download).suggestedFilename()).toContain("NeuroWrite");
+  expect((await download).suggestedFilename()).toContain("PRISM");
   expect(
     await page.evaluate(() =>
       Object.keys(localStorage).filter(

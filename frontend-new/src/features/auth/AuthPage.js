@@ -402,7 +402,7 @@ function AuthFrame({ children }) {
     el(
       "footer",
       { className: "auth-foot" },
-      el("span", null, "\u00A9 ", new Date().getFullYear(), " NeuroWrite AI"),
+      el("span", null, "\u00A9 ", new Date().getFullYear(), " PRISM"),
       el("span", null, "Handwriting screening for professional review."),
     ),
   );

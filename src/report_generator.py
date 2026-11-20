@@ -148,9 +148,9 @@ def generate_screening_pdf(
     story = []
 
     # 1. Header & Title Block
-    logo = Path(__file__).resolve().parents[1] / "frontend-new/public/assets/brand/neurowrite-mark.png"
+    logo = Path(__file__).resolve().parents[1] / "frontend-new/public/assets/brand/prism-mark.png"
     title = [
-        Paragraph("NeuroWrite AI", t_title),
+        Paragraph("PRISM", t_title),
         Paragraph("Handwriting screening summary", t_subtitle),
     ]
     if logo.is_file():

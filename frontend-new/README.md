@@ -1,4 +1,4 @@
-# NeuroWrite AI — fresh frontend
+# PRISM — fresh frontend
 
 Independent HTML, CSS, and JavaScript frontend for the existing FastAPI screening
 service and Supabase database. Vite bundles the static app and supplies public
@@ -56,6 +56,8 @@ Site URL and allowed redirects for your actual origin and these paths:
 
 Accounts use Supabase email/password authentication. Email confirmation must finish
 before protected pages open. Profiles/history are scoped by user ID and RLS.
+Set the PRISM sender name and update any custom signup, invitation, and recovery
+email templates in the Supabase dashboard when rolling out the rebrand.
 Use the same project for the API and frontend. The API validates the browser
 session with Supabase Auth on every screening and report request. Account, key,
 and session errors remain visible. `/health` stays public and reports the process
@@ -155,10 +157,10 @@ set the API's `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `FRONTEND_URL`.
 Use HTTPS and set upload and request limits at the production ingress. The
 FastAPI `/ui` mount still serves the legacy frontend if it is built.
 When packaging FastAPI separately, include
-`frontend-new/public/assets/brand/neurowrite-mark.png` at the same relative path
+`frontend-new/public/assets/brand/prism-mark.png` at the same relative path
 for the branded PDF header.
 
-Set `VITE_SITE_URL` to the public origin (for example, `https://neurowrite.example`)
+Set `VITE_SITE_URL` to the public origin (for example, `https://PRISM.example`)
 to emit a canonical landing URL and absolute social preview URLs. The build
 includes browser icons, an Apple touch icon, and a web app manifest. The
 prototype intentionally uses `noindex` pending approval of the public indexing

@@ -165,7 +165,7 @@ function render() {
       "/settings": "Settings",
     }[pathname] ??
     (pathname.startsWith("/result/") ? "Saved screening" : "Page not found");
-  document.title = `${pageTitle} | NeuroWrite AI`;
+  document.title = `${pageTitle} | PRISM`;
   if (landing.isConnected) {
     toggleMenu(false);
     landing.removeAttribute("data-taste-ready");
@@ -208,7 +208,7 @@ function render() {
     }
   } catch {
     failedRoute = route;
-    document.title = "Workspace unavailable | NeuroWrite AI";
+    document.title = "Workspace unavailable | PRISM";
     updateChildren(root, el(ErrorPage, { failed: true }));
     focusDestination();
   }

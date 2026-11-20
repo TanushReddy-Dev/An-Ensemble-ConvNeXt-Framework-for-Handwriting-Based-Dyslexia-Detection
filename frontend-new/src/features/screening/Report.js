@@ -132,7 +132,7 @@ export default function Report() {
           el(
             "span",
             null,
-            "NeuroWrite AI",
+            "PRISM",
             el("small", null, "Experimental screening support"),
           ),
           el("span", { className: "tag neutral" }, "PDF report"),

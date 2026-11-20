@@ -61,7 +61,7 @@ The checked-in notebook holds the training source cells. To assemble a fresh
 copy while preserving those cells, run from the repository root:
 
 ```powershell
-python colab/build_notebook.py --output "$env:TEMP/NeuroWrite_Colab.ipynb"
+python colab/build_notebook.py --output "$env:TEMP/PRISM_Colab.ipynb"
 ```
 
 The builder also uses `colab/run_comparative_ablation.py` for the benchmark cell.

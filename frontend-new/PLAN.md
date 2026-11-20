@@ -1,7 +1,7 @@
 Kind: software; page type: software; site-kind: software.
 Taste deal: cool-grey-cobalt, Instrument Sans + DM Mono, split hero, word-highlight; see DESIGN_PLAN.md for the complete selection and rationale.
 
-# NeuroWrite AI fresh frontend plan
+# PRISM fresh frontend plan
 
 Planning baseline: 19 November 2026. Status: implemented; see VERIFICATION.md for checks and limits.
 
@@ -173,7 +173,7 @@ The public page uses a short explanatory layout:
 
 Default public-page indexing is off for the experimental prototype. If public
 release is approved later, review indexing and metadata. Suggested title:
-“NeuroWrite AI | Experimental handwriting screening”. Suggested description:
+“PRISM | Experimental handwriting screening”. Suggested description:
 “Review handwriting screening signals and model explanations. Experimental
 decision support that does not replace a qualified professional assessment.”
 

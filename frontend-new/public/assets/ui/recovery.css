@@ -77,11 +77,6 @@
   height: 36px;
 }
 
-.static-error .brand-ai {
-  color: var(--brand-copper, #a74420);
-  font-weight: 500;
-}
-
 .static-error .btn--primary {
   box-sizing: border-box;
   display: inline-flex;

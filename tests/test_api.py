@@ -102,8 +102,8 @@ def test_report_endpoint_returns_pdf(client):
     assert response.content.startswith(b"%PDF")
     assert len(response.content) > 1000
     header = response.headers["content-disposition"]
-    assert 'filename="NeuroWrite-Screening.pdf"' in header
-    assert unquote(header.split("filename*=UTF-8''", 1)[1]) == "NeuroWrite-नमूना-001.pdf"
+    assert 'filename="PRISM-Screening.pdf"' in header
+    assert unquote(header.split("filename*=UTF-8''", 1)[1]) == "PRISM-नमूना-001.pdf"
 
 
 @pytest.mark.parametrize("category,expected", [("Typical", "Normal"), ("Elevated Risk", "Potential dyslexia")])
@@ -128,6 +128,7 @@ def test_report_uses_authoritative_category_at_rounded_cutoff(monkeypatch, categ
         Image.new("RGB", (512, 384), "white"),
     )
     assert pdf.startswith(b"%PDF")
+    assert "PRISM" in paragraphs
     assert any(text.startswith(f"<b>{expected}</b>") for text in paragraphs)
     assert any("An ensemble overlay was unavailable." in text for text in paragraphs)
     assert all("tremors" not in text and "pen pressure" not in text for text in paragraphs)
@@ -204,8 +205,8 @@ def test_screen_fullpage_letters_ig_endpoint(client):
     assert "SCREENING" in data["disclaimer"]
 
 
-def test_neurowrite_predict_endpoint(client):
-    """Verify Neurowrite frontend /predict endpoint runs ConvNeXt ensemble + IG & GradCAM."""
+def test_legacy_predict_endpoint(client):
+    """Verify the legacy /predict endpoint runs ConvNeXt ensemble + IG & GradCAM."""
     img = Image.new("RGB", (256, 256), color=(255, 255, 255))
     buf = io.BytesIO()
     img.save(buf, format="PNG")
