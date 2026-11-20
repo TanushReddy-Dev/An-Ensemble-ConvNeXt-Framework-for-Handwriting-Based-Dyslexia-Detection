@@ -245,7 +245,7 @@ export function Dashboard() {
         el("img", {
           src: "/assets/images/dashboard-1024.webp",
           srcSet:
-            "/assets/images/dashboard-640.webp 640w, /assets/images/dashboard-1024.webp 1024w",
+            "/assets/images/dashboard-640.webp 640w, /assets/images/dashboard-768.webp 768w, /assets/images/dashboard-1024.webp 1024w",
           sizes: "(max-width: 639px) 88vw, 45vw",
           width: 1024,
           height: 683,

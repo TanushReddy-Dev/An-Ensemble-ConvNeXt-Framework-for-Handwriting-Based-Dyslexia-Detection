@@ -3161,20 +3161,71 @@ select:focus-visible {
   color: #fff;
   font-size: 14px;
 }
-.specimen-toolbar > :last-child {
-  margin-inline-start: auto;
+.specimen-label {
   color: var(--brand-dark-muted);
   font-family: var(--font-mono);
   font-size: 12px;
 }
+[data-review-lens] {
+  --lens-edge: 50%;
+}
+@property --lens-edge {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+.lens-controls {
+  margin-inline-start: auto;
+}
+.lens-controls,
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lens-controls[hidden],
+.demo-controls[hidden],
+.lens-range[hidden],
+.demo-workflow-image[hidden],
+.preview-drop[hidden] {
+  display: none;
+}
+.lens-controls button,
+.demo-controls button {
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border-radius: 7px;
+  border: 1px solid currentColor;
+  font-size: 13px;
+  cursor: pointer;
+}
+.lens-controls button:hover,
+.explanation-controls button:hover {
+  background: #ffffff17;
+}
+.lens-controls button[aria-pressed="true"],
+.explanation-controls button[aria-pressed="true"] {
+  background: #d9f4ed;
+  color: #123b44;
+  border-color: #d9f4ed;
+}
+.lens-controls button:focus-visible,
+.explanation-controls button:focus-visible {
+  outline: 2px solid #e7ffff;
+  outline-offset: 3px;
+}
 .specimen-image {
   flex: 1;
+  display: grid;
+  place-items: center;
   position: relative;
-  min-height: 0;
+  min-block-size: 310px;
   overflow: hidden;
-  background: #0b259e;
+  background:
+    linear-gradient(#90d3d211 1px, transparent 1px) center / 24px 24px,
+    linear-gradient(90deg, #90d3d211 1px, transparent 1px) center / 24px 24px,
+    radial-gradient(ellipse at 50% 42%, #205076, #112e48 72%);
 }
-.specimen-image > img,
 .auth-photo > img,
 .overview-image > img {
   display: block;
@@ -3182,10 +3233,123 @@ select:focus-visible {
   height: 100%;
   object-fit: cover;
 }
+.specimen-document {
+  position: relative;
+  overflow: hidden;
+  inline-size: min(57%, 270px);
+  aspect-ratio: 0.735;
+  border-radius: 3px;
+  background: #e7dfce;
+  box-shadow: 0 18px 38px #071a2e85;
+}
+.specimen-document > img {
+  position: absolute;
+  inline-size: 119%;
+  max-inline-size: none;
+  block-size: 109%;
+  inset: -4.7% auto auto -7%;
+  object-fit: fill;
+}
+.specimen-review {
+  position: absolute;
+  inset: 59% 7% auto;
+  block-size: 8.5%;
+  border: 1px solid #238274aa;
+  border-inline-start-width: 3px;
+  border-radius: 3px;
+  background: #49b69c29;
+}
+[data-review-lens] .specimen-document {
+  inline-size: min(62%, 285px);
+}
+.lens-treatment {
+  position: absolute;
+  inset: 0;
+  background: #6ccec426;
+  clip-path: inset(0 0 0 var(--lens-edge));
+  pointer-events: none;
+}
+.specimen-review-secondary {
+  inset-block-start: 46%;
+  inset-inline-end: 20%;
+}
+.lens-divider {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--lens-edge);
+  inline-size: 2px;
+  translate: -50% 0;
+  background: linear-gradient(#c6faff, #45d2c7 42%, #edba8b 82%);
+  box-shadow: 0 0 12px #65f1e5b0;
+  pointer-events: none;
+}
+.lens-divider span {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  inline-size: 38px;
+  block-size: 30px;
+  border: 1px solid #a0e3dd;
+  border-radius: 20px;
+  background: #10353b;
+  color: #fff;
+  font-size: 19px;
+}
+[data-lens-endpoint] .lens-divider {
+  visibility: hidden;
+}
+.lens-range {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+.lens-range:focus-visible {
+  opacity: 1;
+  accent-color: #105968;
+  outline: 2px solid #10353b;
+  outline-offset: -4px;
+}
+.specimen-document:has(.lens-range:focus-visible) {
+  outline: 3px solid #baf3ed;
+  outline-offset: 4px;
+}
+@media (max-width: 639px) {
+  .specimen-toolbar {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  .lens-controls {
+    flex-wrap: nowrap;
+  }
+  .lens-controls button {
+    padding-inline: 8px;
+  }
+  .specimen-image {
+    min-block-size: clamp(220px, 78vw, 350px);
+  }
+  .specimen-document {
+    inline-size: min(56%, 210px);
+  }
+}
+@media (max-width: 359px) {
+  .specimen-toolbar > svg {
+    display: none;
+  }
+  .specimen-label {
+    white-space: nowrap;
+    font-size: 11px;
+  }
+}
 .specimen-guides {
   position: absolute;
-  inset: 16px;
-  border: 1px solid #e0e7ff60;
+  inset: 7px;
+  border: 1px solid #23827480;
   clip-path: polygon(
     0 0,
     24px 0,
@@ -3218,30 +3382,50 @@ select:focus-visible {
   flex-wrap: wrap;
   list-style: none;
   padding: 0 0 12px;
-  gap: 8px 16px;
+  gap: 6px;
   margin: 0;
   border-bottom: 1px solid #d8dfed;
   color: #485574;
   font-size: 0.8125rem;
 }
-.preview-stages li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.preview-stages li::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-}
-.preview-stages [aria-current="step"] {
+.preview-stages button[aria-pressed="true"] {
   color: #233ab8;
+  background: #e5ecff;
+  border-color: #97a9e2;
   font-weight: 650;
 }
-.preview-stages [aria-current="step"]::before {
-  background: currentColor;
+.demo-workflow-image {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(12px, 3vw, 34px);
+  text-align: start;
+}
+.demo-workflow-sheet {
+  position: relative;
+  inline-size: clamp(74px, 14vw, 132px);
+}
+.demo-workflow-sheet img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.demo-workflow-sheet span {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #247a8880;
+}
+[data-workflow-view="review"] .demo-workflow-sheet span {
+  inset: 57% 9% 31%;
+  background: #66d0b34d;
+}
+.demo-workflow-copy p {
+  margin: 8px 0 0;
+}
+@media (max-width: 639px) {
+  .preview-stages button {
+    padding-inline: 9px;
+  }
 }
 .public-page .app-frame {
   background: var(--brand-petrol);
@@ -3265,37 +3449,61 @@ select:focus-visible {
 .explanation-frame .explanation-note {
   color: var(--brand-dark-muted);
 }
-.review-diagram {
+.explanation-demo {
+  width: 100%;
+}
+.explanation-controls {
+  color: #e7f5f5;
+  margin-block-end: 14px;
+}
+.explanation-sample {
+  min-block-size: 430px;
   display: grid;
-  justify-items: center;
-  padding: 24px 0;
+  place-items: center;
+  padding: 16px;
+  background: #102c4a;
+  border-radius: 10px;
 }
-.diagram-node {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: min(100%, 270px);
-  min-height: 64px;
-  padding: 12px;
-  border: 1px solid #789c9e;
-  border-radius: 8px;
-  background: #20565d;
-  color: #fff;
-  text-align: center;
+.explanation-sample .specimen-document {
+  inline-size: min(100%, 300px);
 }
-.diagram-node svg {
-  flex-shrink: 0;
+@media (max-width: 767px) {
+  .explanation-sample {
+    min-block-size: 320px;
+  }
+  .explanation-sample .specimen-document {
+    inline-size: min(88%, 218px);
+  }
 }
-.diagram-processor {
-  background: #e0efed;
-  border-color: #e0efed;
-  color: var(--brand-petrol);
+.explanation-regions,
+.explanation-strokes {
+  display: none;
+  position: absolute;
+  inset: 0;
 }
-.diagram-connector {
-  width: 1px;
-  height: 32px;
-  background: #a3bcba;
+[data-explanation-view="regions"] .explanation-regions {
+  display: block;
+  background:
+    radial-gradient(ellipse at 36% 47%, #2b54ad9e, transparent 30%),
+    radial-gradient(ellipse at 71% 65%, #2b54ad7a, transparent 25%);
+}
+[data-explanation-view="strokes"] .explanation-strokes {
+  display: block;
+  inset: 59% 8% 25%;
+  background: repeating-linear-gradient(104deg, #276483b0 0 2px, transparent 2px 9px);
+  clip-path: polygon(1% 34%, 90% 17%, 94% 33%, 4% 53%, 6% 67%, 86% 58%, 89% 72%, 5% 83%);
+}
+.explanation-demo-note {
+  color: var(--p-muted);
+  font-size: 14px;
+  margin-block: 14px 4px;
+  min-block-size: 3em;
+}
+.closing-specimen {
+  margin-inline-start: auto;
+}
+.closing-specimen .specimen-document {
+  inline-size: clamp(68px, 12vw, 120px);
 }
 
 /* Photography and the form stay on separate surfaces. */
@@ -3462,9 +3670,6 @@ select:focus-visible {
   .public-page .hero__media.specimen-frame {
     min-height: 235px;
   }
-  .specimen-image > img {
-    object-position: center 42%;
-  }
   .public-page #explanations {
     --hm: 1;
   }
@@ -3493,16 +3698,6 @@ select:focus-visible {
     min-height: 0;
     margin-top: 0;
     gap: 16px;
-  }
-  .review-diagram {
-    padding: 8px 0;
-  }
-  .diagram-node {
-    min-height: 48px;
-    padding: 8px;
-  }
-  .diagram-connector {
-    height: 24px;
   }
   .app-shell .overview-intro {
     grid-template-columns: 1fr;

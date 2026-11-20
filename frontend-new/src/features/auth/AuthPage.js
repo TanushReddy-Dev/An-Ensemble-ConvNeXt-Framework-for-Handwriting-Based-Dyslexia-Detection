@@ -367,7 +367,7 @@ function AuthFrame({ children }) {
             { className: "auth-photo", "aria-hidden": "true" },
             el("img", {
               src: `/assets/images/${artwork}-1024.webp`,
-              srcSet: `/assets/images/${artwork}-640.webp 640w, /assets/images/${artwork}-1024.webp 1024w`,
+              srcSet: `/assets/images/${artwork}-640.webp 640w, /assets/images/${artwork}-768.webp 768w, /assets/images/${artwork}-1024.webp 1024w`,
               sizes: "(max-width: 767px) 90vw, 46vw",
               width: 1024,
               height: 1280,

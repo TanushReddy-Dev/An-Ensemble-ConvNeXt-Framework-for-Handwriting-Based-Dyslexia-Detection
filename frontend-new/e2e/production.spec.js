@@ -72,14 +72,16 @@ test("the production overview has useful content with JavaScript disabled", asyn
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Handwriting screening for educators.",
     );
-    const artwork = page.getByRole("img", { name: /ruled sheet/ });
+    const artwork = page.getByRole("img", { name: /handwriting sample sheet/ });
+    await expect(page.getByRole("slider")).toBeHidden();
+    await expect(page.locator(".lens-treatment")).toBeVisible();
     await expect
       .poll(() =>
         artwork.evaluate((img) =>
           img.naturalWidth > 0 ? new URL(img.currentSrc).pathname : "",
         ),
       )
-      .toMatch(/^\/assets\/images\/landing-(640|1024)\.webp$/);
+      .toMatch(/^\/assets\/images\/landing-(640|768|1024)\.webp$/);
     await expect(
       page.getByRole("heading", { name: "Screening questions." }),
     ).toBeVisible();
@@ -94,6 +96,43 @@ test("the production overview has useful content with JavaScript disabled", asyn
   } finally {
     await context.close();
   }
+});
+
+test("the landing demo supports the lens, workflow steps, and explanation views", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const lens = page.locator("[data-review-lens]");
+  const slider = lens.getByRole("slider");
+  await expect(slider).toHaveValue("50");
+  await slider.press("ArrowRight");
+  await expect(slider).toHaveValue("51");
+  await expect(lens).toHaveCSS("--lens-edge", "49%");
+  await lens.getByRole("button", { name: "Original" }).click();
+  await expect(slider).toHaveValue("0");
+  await expect(lens.locator(".lens-divider")).toBeHidden();
+  await lens.getByRole("button", { name: "Review" }).click();
+  await expect(slider).toHaveValue("100");
+  const steps = page.getByRole("group", { name: "Screening workflow" });
+  await steps.getByRole("button", { name: "Screen", exact: true }).click();
+  await expect(
+    page.getByText("Screen the sample", { exact: true }),
+  ).toBeVisible();
+  await steps.getByRole("button", { name: "Review", exact: true }).click();
+  await expect(
+    page.getByText("Review the result", { exact: true }),
+  ).toBeVisible();
+  await steps.getByRole("button", { name: "Choose image" }).click();
+  await expect(
+    page.getByText("Choose a handwriting image", { exact: true }),
+  ).toBeVisible();
+  const views = page.getByRole("group", { name: "Explanation views" });
+  await views.getByRole("button", { name: "Grad-CAM" }).click();
+  await expect(page.locator(".explanation-regions")).toBeVisible();
+  await views.getByRole("button", { name: "Stroke attribution" }).click();
+  await expect(page.locator(".explanation-strokes")).toBeVisible();
+  await expect(page.locator(".explanation-regions")).toBeHidden();
 });
 
 test("the built error pages load the logo and offer recovery without JavaScript", async ({
