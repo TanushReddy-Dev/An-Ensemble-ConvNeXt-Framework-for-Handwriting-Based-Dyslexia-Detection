@@ -3,19 +3,19 @@ Deal: palette cool-grey-cobalt; type instrument; hero split; nav-centre; footer-
 
 # PRISM frontend design plan
 
-Status: implemented, 19 November 2026. See VERIFICATION.md for local and deployment checks.
+Status: implemented, 20 November 2026. See VERIFICATION.md for local and deployment checks.
 Companion: PLAN.md owns backend contracts, routes, state, and implementation phases.
 This document makes the visual and interaction decisions for those requirements.
 
 ## Visual refinement
 
-PRISM pairs its uppercase wordmark with the supplied teal and orange
-brain-and-pen mark on the landing, account, workspace, and recovery screens.
+PRISM pairs its uppercase wordmark with a bold teal and orange brain-and-pen
+symbol on the landing, account, workspace, and recovery screens.
 The PDF, browser titles, web manifest, and social preview use the same name.
 
-The mark uses real transparency through the background and the pen's open areas.
-The navigation uses a compact crop around the brain and pen. Recovery screens
-use the full circuit emblem.
+Both versions use a transparent background. The browser favicon and navigation
+use the compact symbol for readability at small sizes. The recovery artwork,
+report preview, PDF, and install icons use the full mark with four scan corners.
 The supplied artwork also informs the palette. Deep teal anchors action buttons
 and dark surfaces, while copper distinguishes error codes.
 The logo is brighter on dark surfaces and sits directly on the page color.

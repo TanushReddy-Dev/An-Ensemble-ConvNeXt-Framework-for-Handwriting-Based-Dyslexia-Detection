@@ -131,33 +131,11 @@ small {
   letter-spacing: -0.045em;
   white-space: nowrap;
 }
-.brand b {
-  font-weight: 400;
-  color: var(--muted);
-}
 .mark {
-  display: inline-grid;
-  place-items: center;
-  border: 2px solid currentColor;
-  border-radius: 50%;
   width: 22px;
   height: 22px;
   flex: none;
-}
-.mark:after {
-  content: "";
-  background: currentColor;
-  border-radius: 50%;
-  width: 6px;
-  height: 6px;
-}
-.signal .mark {
-  border-radius: 3px;
-  transform: rotate(-12deg);
-}
-.field .mark {
-  background: #f4cc9d;
-  border: none;
+  background: url("/assets/brand/prism-symbol.webp") center / contain no-repeat;
 }
 .hero {
   display: grid;

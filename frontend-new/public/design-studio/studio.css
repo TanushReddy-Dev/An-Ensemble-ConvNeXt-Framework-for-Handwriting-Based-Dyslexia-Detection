@@ -44,16 +44,7 @@ a {
 .identity i {
   width: 20px;
   height: 20px;
-  border: 2px solid;
-  border-radius: 50%;
-  position: relative;
-}
-.identity i::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  background: currentColor;
-  border-radius: 50%;
+  background: url("/assets/brand/prism-symbol.webp") center / contain no-repeat;
 }
 .identity span {
   padding-left: 10px;
