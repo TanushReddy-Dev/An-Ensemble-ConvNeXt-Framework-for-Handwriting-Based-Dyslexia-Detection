@@ -35,12 +35,10 @@ Result tabs fade the selected panel, including when an overlay is unavailable.
 Navigation and focus stay immediate. Keyboard actions and reduced-motion
 settings skip these effects.
 
-The split hero pairs its headline with an interactive review lens over a
-fictional worksheet. An entrance sweep introduces the divider. Visitors can
-drag it, use the keyboard, or switch between Original and Review. The workspace
-preview offers three selectable steps, and the explanation viewer labels its
-overlays as illustrations. Reduced motion and JavaScript-disabled visits have
-a readable still. The closing returns to the same worksheet beside the CTA.
+The split hero pairs the headline with a complete fictional handwriting
+sample on a cobalt surface. The static artwork keeps the whole worksheet in
+view at desktop and phone sizes. The workspace section keeps the linked upload
+preview, and the explanations section includes a diagram of the review steps.
 
 Login shows a reviewer marking an anonymous handwriting sample. Signup shows a
 phone capturing a ruled sample and puts the form first on desktop. On phones both
