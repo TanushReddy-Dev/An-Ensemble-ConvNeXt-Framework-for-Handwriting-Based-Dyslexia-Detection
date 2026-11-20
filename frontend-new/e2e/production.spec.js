@@ -72,14 +72,18 @@ test("the production overview has useful content with JavaScript disabled", asyn
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Handwriting screening for educators.",
     );
-    const artwork = page.getByRole("img", { name: /ruled sheet/ });
+    const artwork = page.getByRole("img", { name: /handwriting sample sheet/ });
+    await expect(
+      page.getByRole("button", { name: "Pause handwriting illustration" }),
+    ).toBeHidden();
+    await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
     await expect
       .poll(() =>
         artwork.evaluate((img) =>
           img.naturalWidth > 0 ? new URL(img.currentSrc).pathname : "",
         ),
       )
-      .toMatch(/^\/assets\/images\/landing-(640|1024)\.webp$/);
+      .toMatch(/^\/assets\/images\/landing-(640|768|1024)\.webp$/);
     await expect(
       page.getByRole("heading", { name: "Screening questions." }),
     ).toBeVisible();
@@ -94,6 +98,50 @@ test("the production overview has useful content with JavaScript disabled", asyn
   } finally {
     await context.close();
   }
+});
+
+test("the hero scan repeats in view and stops when paused or offscreen", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const pause = page.getByRole("button", {
+    name: "Pause handwriting illustration",
+  });
+  const resume = page.getByRole("button", {
+    name: "Resume handwriting illustration",
+  });
+  const sweep = page.locator("[data-scan-pass]");
+  const animationCount = () =>
+    sweep.evaluate((element) => element.getAnimations().length);
+  await expect(pause).toBeVisible();
+  await expect
+    .poll(() =>
+      sweep.evaluate((element) => {
+        const [animation] = element.getAnimations();
+        return animation
+          ? Number(animation.currentTime) -
+              Number(animation.effect.getTiming().duration)
+          : -1;
+      }),
+    )
+    .toBeGreaterThan(200);
+
+  await pause.click();
+  await expect(resume).toBeVisible();
+  await expect.poll(animationCount).toBe(0);
+  await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
+  await resume.click();
+  await expect.poll(animationCount).toBe(1);
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect.poll(animationCount).toBe(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect.poll(animationCount).toBe(1);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(pause).toBeHidden();
+  await expect.poll(animationCount).toBe(0);
+  await expect(page.locator("[data-scan-review]")).toHaveCSS("opacity", "1");
 });
 
 test("the built error pages load the logo and offer recovery without JavaScript", async ({

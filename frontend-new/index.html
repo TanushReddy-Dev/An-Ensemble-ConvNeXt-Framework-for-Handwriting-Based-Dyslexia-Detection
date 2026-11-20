@@ -31,13 +31,10 @@
     <meta property="og:image:height" content="750" />
     <meta
       property="og:image:alt"
-      content="PRISM landing page with a handwritten sample on a cobalt blue desk."
+      content="PRISM landing page with an illustrated handwriting review on a blue grid."
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="PRISM | Handwriting screening"
-    />
+    <meta name="twitter:title" content="PRISM | Handwriting screening" />
     <meta
       name="twitter:description"
       content="Review a handwriting image and the model's experimental screening signal."
@@ -45,7 +42,7 @@
     <meta name="twitter:image" content="/assets/images/landing-share.jpg" />
     <meta
       name="twitter:image:alt"
-      content="PRISM landing page with a handwritten sample on a cobalt blue desk."
+      content="PRISM landing page with an illustrated handwriting review on a blue grid."
     />
     <meta name="application-name" content="PRISM" />
     <meta name="apple-mobile-web-app-title" content="PRISM" />
@@ -175,6 +172,7 @@
                 <div
                   class="hero__media specimen-frame span-6 start-7"
                   data-visual="true"
+                  data-hero-scan
                 >
                   <div class="specimen-toolbar">
                     <svg
@@ -187,22 +185,58 @@
                     >
                       <path
                         d="M110.66,147.56a8,8,0,0,0-13.32,0L76.49,178.85l-9.76-15.18a8,8,0,0,0-13.46,0l-36,56A8,8,0,0,0,24,232H152a8,8,0,0,0,6.66-12.44ZM38.65,216,60,182.79l9.63,15a8,8,0,0,0,13.39.11l21-31.47L137.05,216Zm175-133.66-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40v88a8,8,0,0,0,16,0V40h88V88a8,8,0,0,0,8,8h48V216h-8a8,8,0,0,0,0,16h8a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160Z"
-                      ></path></svg
-                    ><span>Handwriting image</span><span>Sample</span>
+                      ></path>
+                    </svg>
+                    <span class="specimen-label">Illustration</span>
+                    <button
+                      type="button"
+                      class="specimen-playback"
+                      aria-label="Pause handwriting illustration"
+                      data-scan-toggle
+                      hidden
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M9 5v14M15 5v14" />
+                      </svg>
+                    </button>
                   </div>
                   <div class="specimen-image">
-                    <img
-                      src="/assets/images/landing-1024.webp"
-                      srcset="
-                        /assets/images/landing-640.webp   640w,
-                        /assets/images/landing-1024.webp 1024w
-                      "
-                      sizes="(max-width: 639px) 92vw, (max-width: 1023px) 84vw, 44vw"
-                      width="1024"
-                      height="1280"
-                      fetchpriority="high"
-                      alt="A ruled sheet with a handwritten passage about plants beside a fountain pen."
-                    /><span class="specimen-guides" aria-hidden="true"></span>
+                    <div class="specimen-document">
+                      <img
+                        src="/assets/images/landing-1024.webp"
+                        srcset="
+                          /assets/images/landing-640.webp   640w,
+                          /assets/images/landing-768.webp   768w,
+                          /assets/images/landing-1024.webp 1024w
+                        "
+                        sizes="(max-width: 639px) 52vw, 300px"
+                        width="1024"
+                        height="1280"
+                        fetchpriority="high"
+                        alt="A ruled handwriting sample sheet with a fictional passage about a paper boat."
+                      />
+                      <span
+                        class="specimen-review"
+                        data-scan-review
+                        aria-hidden="true"
+                      ></span>
+                      <span class="specimen-guides" aria-hidden="true"></span>
+                      <span
+                        class="specimen-sweep"
+                        data-scan-pass
+                        aria-hidden="true"
+                      ></span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -493,9 +527,8 @@
                 <div class="faq-item faq__item">
                   <h3>Is this a diagnosis?</h3>
                   <p>
-                    No. PRISM is an experimental screening tool. Its
-                    output does not replace a formal assessment by a qualified
-                    professional.
+                    No. PRISM is an experimental screening tool. Its output does
+                    not replace a formal assessment by a qualified professional.
                   </p>
                 </div>
                 <div class="faq-item faq__item">
@@ -562,9 +595,7 @@
                     d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"
                   ></path></svg
               ></a>
-              <p class="closing-word" aria-hidden="true">
-                PRISM
-              </p>
+              <p class="closing-word" aria-hidden="true">PRISM</p>
             </div>
             <div class="closing-links">
               <a

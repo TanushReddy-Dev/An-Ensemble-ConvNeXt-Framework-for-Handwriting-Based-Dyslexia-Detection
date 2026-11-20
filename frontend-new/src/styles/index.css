@@ -3161,20 +3161,46 @@ select:focus-visible {
   color: #fff;
   font-size: 14px;
 }
-.specimen-toolbar > :last-child {
-  margin-inline-start: auto;
+.specimen-label {
   color: var(--brand-dark-muted);
   font-family: var(--font-mono);
   font-size: 12px;
 }
+.specimen-playback {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  margin-block: -7px;
+  margin-inline-start: auto;
+  margin-inline-end: -7px;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+}
+.specimen-playback[hidden] {
+  display: none;
+}
+.specimen-playback:hover,
+.specimen-playback:focus-visible {
+  background: #ffffff20;
+}
+.specimen-playback:focus-visible {
+  outline: 2px solid #b9e8e7;
+  outline-offset: -2px;
+}
 .specimen-image {
   flex: 1;
+  display: grid;
+  place-items: center;
   position: relative;
-  min-height: 0;
+  min-block-size: 310px;
   overflow: hidden;
-  background: #0b259e;
+  background:
+    linear-gradient(#90d3d211 1px, transparent 1px) center / 24px 24px,
+    linear-gradient(90deg, #90d3d211 1px, transparent 1px) center / 24px 24px,
+    radial-gradient(ellipse at 50% 42%, #205076, #112e48 72%);
 }
-.specimen-image > img,
 .auth-photo > img,
 .overview-image > img {
   display: block;
@@ -3182,10 +3208,62 @@ select:focus-visible {
   height: 100%;
   object-fit: cover;
 }
+.specimen-document {
+  position: relative;
+  overflow: hidden;
+  inline-size: min(57%, 270px);
+  aspect-ratio: 0.735;
+  border-radius: 3px;
+  background: #e7dfce;
+  box-shadow: 0 18px 38px #071a2e85;
+}
+.specimen-document > img {
+  position: absolute;
+  inline-size: 119%;
+  max-inline-size: none;
+  block-size: 109%;
+  inset: -4.7% auto auto -7%;
+  object-fit: fill;
+}
+.specimen-review {
+  position: absolute;
+  inset: 59% 7% auto;
+  block-size: 8.5%;
+  border: 1px solid #238274aa;
+  border-inline-start-width: 3px;
+  border-radius: 3px;
+  background: #49b69c29;
+}
+.specimen-sweep {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.specimen-sweep::before {
+  content: "";
+  position: absolute;
+  inset: -20px 0 auto;
+  block-size: 21px;
+  border-bottom: 2px solid #68dfcd;
+  background: linear-gradient(transparent, #68dfcd66);
+}
+@media (max-width: 639px) {
+  .specimen-toolbar {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  .specimen-image {
+    min-block-size: clamp(220px, 78vw, 350px);
+  }
+  .specimen-document {
+    inline-size: min(56%, 210px);
+  }
+}
 .specimen-guides {
   position: absolute;
-  inset: 16px;
-  border: 1px solid #e0e7ff60;
+  inset: 7px;
+  border: 1px solid #23827480;
   clip-path: polygon(
     0 0,
     24px 0,
@@ -3461,9 +3539,6 @@ select:focus-visible {
 @media (max-width: 639px) {
   .public-page .hero__media.specimen-frame {
     min-height: 235px;
-  }
-  .specimen-image > img {
-    object-position: center 42%;
   }
   .public-page #explanations {
     --hm: 1;

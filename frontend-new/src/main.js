@@ -24,6 +24,7 @@ import {
   revealPage,
 } from "./ui/motion.js";
 import { List, X } from "./ui/icons.js";
+import { bindHeroScan } from "./ui/hero-scan.js";
 import ErrorPage from "./components/ui/ErrorPage.js";
 import AppLayout from "./components/layout/AppLayout.js";
 import AuthPage from "./features/auth/AuthPage.js";
@@ -37,6 +38,7 @@ import Upload from "./features/screening/Upload.js";
 
 const root = document.getElementById("root");
 const landing = root.querySelector(".public-page");
+bindHeroScan(landing.querySelector("[data-hero-scan]"));
 let mountedLanding = false;
 let routeKey;
 let renderedRoute;

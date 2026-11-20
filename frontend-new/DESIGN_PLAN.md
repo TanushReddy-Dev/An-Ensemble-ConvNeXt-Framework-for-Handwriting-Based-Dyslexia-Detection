@@ -35,20 +35,24 @@ Result tabs fade the selected panel, including when an overlay is unavailable.
 Navigation and focus stay immediate. Keyboard actions and reduced-motion
 settings skip these effects.
 
-The user asked for a more distinctive design. The split hero now pairs a large
-headline with a cobalt-framed handwriting specimen. The specimen is generated
-artwork with fictional text, and is labeled as a sample. The workspace section
-keeps the linked upload preview. A compact diagram in the explanations section
+The split hero pairs a large headline with a short handwriting review
+illustration. A scan sweeps over a fictional worksheet and settles on one line
+for review. The scan repeats while the illustration is visible. Visitors can
+pause or resume it with the playback control.
+Reduced motion and JavaScript-disabled pages show the finished still. The
+workspace section keeps the linked upload preview. The explanations section
 shows how the input, screening, and review fit together.
 
-Login uses an open notebook with a pen across the binding. Signup uses a blank
-notebook with loose ruled sheets and puts the form first on desktop. On phones both
-forms come first. The dashboard pairs a wide review desk still life with the three
-screening steps. Recovery and confirmation use a centered form without a photo.
+Login shows a reviewer marking an anonymous handwriting sample. Signup shows a
+phone capturing a ruled sample and puts the form first on desktop. On phones both
+forms come first. The dashboard pairs a close-up of a reading magnifier over one
+fictional handwriting sample with the three screening steps. Recovery and
+confirmation use a centered form.
 The authenticated pages share a dark teal navigation rail and a light working surface.
 
-The landing, login, signup, and dashboard images each have their own composition.
-Responsive WebP variants and the landing share image live in
+The landing, login, signup, and dashboard images show distinct steps using generated
+artwork and fictional handwriting. The 640, 768, and 1024px WebP variants and the
+landing share image live in
 `public/assets/images/` and are served from `/assets/images/`. The landing and
 social preview share the same hero artwork by design.
 
