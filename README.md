@@ -1,6 +1,6 @@
-# NeuroWrite AI
+# PRISM
 
-NeuroWrite AI is an experimental handwriting screening tool for professional
+PRISM is an experimental handwriting screening tool for professional
 review. A qualified professional is responsible for formal assessment.
 
 The FastAPI service scores handwriting images with the available ConvNeXt-Tiny
@@ -36,7 +36,7 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-Open [NeuroWrite AI](http://127.0.0.1:5173/). The current frontend is plain HTML,
+Open [PRISM](http://127.0.0.1:5173/). The current frontend is plain HTML,
 CSS, and JavaScript. The React application in `frontend/` remains available as a
 legacy reference.
 

@@ -1,4 +1,4 @@
-# Runtime and validation dependencies for NeuroWrite AI.
+# Runtime and validation dependencies for PRISM.
 # Headless build of opencv is ideal for Linux servers (Render/Railway/Docker)
 torch>=2.0.0
 torchvision>=0.15.0

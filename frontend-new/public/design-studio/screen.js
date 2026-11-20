@@ -6,7 +6,7 @@ const design =
 const [page, label] =
   pages.find(([id]) => id === params.get("page")) ?? pages[0];
 document.body.classList.add(design.key, page);
-document.title = `${label} · ${design.name} · NeuroWrite`;
+document.title = `${label} · ${design.name} · PRISM`;
 const variant = (folio, signal, field) =>
   ({ folio, signal, field })[design.key];
 const base = "/assets/images/";
@@ -31,7 +31,7 @@ const specimen = (className = "") =>
 const photo = (key) =>
   `<img class="specimen" src="${base}${photos[key]}" alt="">`;
 const brand =
-  '<span class="mark" aria-hidden="true"></span><span>NeuroWrite<b> AI</b></span>';
+  '<span class="mark" aria-hidden="true"></span><span>PRISM</span>';
 const button = (text, secondary = false) =>
   `<button type="button" class="action ${secondary ? "secondary" : ""}">${text}</button>`;
 const badge = (content) => `<span class="badge">${content}</span>`;

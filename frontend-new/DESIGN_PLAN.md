@@ -1,7 +1,7 @@
 Kind: software; page type: software; site-kind: software.
 Deal: palette cool-grey-cobalt; type instrument; hero split; nav-centre; footer-dark; close-word; rhythm space; buttons tonal; mark ring; ground sage; moment word-highlight. The neutral grey keeps the document central; cobalt distinguishes actions and focus from handwriting attribution colors.
 
-# NeuroWrite AI frontend design plan
+# PRISM frontend design plan
 
 Status: implemented, 19 November 2026. See VERIFICATION.md for local and deployment checks.
 Companion: PLAN.md owns backend contracts, routes, state, and implementation phases.
@@ -9,15 +9,15 @@ This document makes the visual and interaction decisions for those requirements.
 
 ## Visual refinement
 
-NeuroWrite AI uses the supplied teal and orange brain-and-pen mark on the landing,
-account, workspace, and recovery screens and the PDF. It has a 32px PNG fallback
-and a 180px Apple touch icon. Page titles identify the active screen.
+PRISM pairs its uppercase wordmark with the supplied teal and orange
+brain-and-pen mark on the landing, account, workspace, and recovery screens.
+The PDF, browser titles, web manifest, and social preview use the same name.
 
 The mark uses real transparency through the background and the pen's open areas.
 The navigation uses a compact crop around the brain and pen. Recovery screens
 use the full circuit emblem.
 The supplied artwork also informs the palette. Deep teal anchors action buttons
-and dark surfaces, while copper distinguishes the wordmark and error codes.
+and dark surfaces, while copper distinguishes error codes.
 The logo is brighter on dark surfaces and sits directly on the page color.
 Existing cobalt photography and screening outcome colors keep their existing roles.
 
@@ -59,7 +59,7 @@ moment, and section rhythm carry forward.
 
 ## Design brief
 
-NeuroWrite AI is an experimental handwriting screening tool. Its central task is
+PRISM is an experimental handwriting screening tool. Its central task is
 reviewing a handwriting image and the model's returned screening signal. Build for
 educators, examiners, and researchers; that audience is inferred from the repository
 and can be refined later. The primary public action is **Start a screening**.
@@ -69,7 +69,7 @@ clear review tools, and concise explanations. The product itself supplies the
 visuals. Avoid stock clinicians, brain graphics, a generic analytics dashboard,
 fictional student records, and invented performance statistics.
 
-The existing NeuroWrite AI name comes from the repository. No new name, fabricated
+The existing PRISM name comes from the repository. No new name, fabricated
 customer proof, pricing, or clinical validation is introduced.
 
 ## Source and precedence
@@ -194,7 +194,7 @@ preview opens the authenticated workflow.
 **Hero heading:** Handwriting screening for educators.
 
 **Lead:** Upload a handwriting image to review its screening signal and available
-model explanations. NeuroWrite AI is an experimental tool for professional review.
+model explanations. PRISM is an experimental tool for professional review.
 
 **Fact line:** One handwriting image per screening.
 
@@ -213,14 +213,14 @@ depend on the screening response.
 
 **Statement:** Handwriting screening supports professional review.
 
-**Statement supporting text:** NeuroWrite AI provides an experimental screening
+**Statement supporting text:** PRISM provides an experimental screening
 signal. A qualified professional must conduct any formal assessment.
 
 **FAQ heading:** Screening questions.
 
 | Question | Draft answer |
 | --- | --- |
-| Is this a diagnosis? | No. NeuroWrite AI is an experimental screening tool. Its output does not replace a formal assessment by a qualified professional. |
+| Is this a diagnosis? | No. PRISM is an experimental screening tool. Its output does not replace a formal assessment by a qualified professional. |
 | Which images can I upload? | Choose one PNG, JPEG, WebP, or BMP image. The planned upload limit is 25 MiB. Use a clear image of the handwriting you want to review. |
 | What does the score mean? | The score summarizes the model's screening signal for the image. It is not an accuracy measure or a clinical diagnosis. |
 | What does fold disagreement mean? | The ensemble's models can return different scores. The displayed range describes those differences, rather than a clinical confidence interval. |

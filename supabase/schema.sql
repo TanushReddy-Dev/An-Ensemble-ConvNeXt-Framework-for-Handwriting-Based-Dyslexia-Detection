@@ -1,5 +1,5 @@
 -- =============================================================================
--- NeuroWrite AI — Supabase Database Schema & Row-Level Security (RLS)
+-- PRISM — Supabase Database Schema & Row-Level Security (RLS)
 -- =============================================================================
 
 -- Enable UUID extension

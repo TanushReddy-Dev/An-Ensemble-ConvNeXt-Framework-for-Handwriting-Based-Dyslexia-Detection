@@ -87,7 +87,7 @@ export async function report(file, student, examiner, backbone) {
     .replace(/[^\p{L}\p{M}\p{N}_.-]+/gu, "_")
     .replace(/^[._-]+|[._-]+$/g, "")
     .slice(0, 60);
-  link.download = `NeuroWrite-${safeId || "screening"}.pdf`;
+  link.download = `PRISM-${safeId || "screening"}.pdf`;
   document.body.append(link);
   link.click();
   link.remove();

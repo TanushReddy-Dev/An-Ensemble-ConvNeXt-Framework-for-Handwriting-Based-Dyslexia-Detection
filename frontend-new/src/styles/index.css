@@ -441,7 +441,6 @@
   --brand-petrol: #10353b;
   --brand-dark-line: #42696d;
   --brand-dark-muted: #c7dddd;
-  --brand-dark-accent: #ffb691;
   --p-bg: #eef0f3;
   --p-surface: #e2e5ea;
   --p-ink: #0b0c0e;
@@ -625,12 +624,8 @@ select:focus-visible {
   inline-size: 36px;
   block-size: 36px;
   flex: none;
-  background: url("/assets/brand/neurowrite-symbol.webp") center / contain
+  background: url("/assets/brand/prism-symbol.webp") center / contain
     no-repeat;
-}
-.brand-ai {
-  color: var(--brand-copper);
-  font-weight: 500;
 }
 .sidebar .brand-mark,
 .closing .brand-mark {
@@ -1159,9 +1154,6 @@ select:focus-visible {
   white-space: nowrap;
   margin: 48px 0 0;
 }
-.closing-word span {
-  color: #8e8f92;
-}
 .closing-links {
   display: flex;
   flex-wrap: wrap;
@@ -1179,9 +1171,6 @@ select:focus-visible {
   width: 100%;
   font-size: 13px;
   color: #a2a7af;
-}
-.closing .brand-ai {
-  color: var(--brand-dark-accent);
 }
 /* Auth and application screens intentionally use natural task layouts. */
 .auth-page {
@@ -2328,9 +2317,6 @@ select:focus-visible {
     inline-size: 28px;
     block-size: 28px;
   }
-  .public-page .nav .brand-ai {
-    display: none;
-  }
   .public-page #hero-h {
     font-size: 40px;
     max-width: 12ch;
@@ -3368,9 +3354,6 @@ select:focus-visible {
 .sidebar .account-row small,
 .sidebar .signout {
   color: var(--brand-dark-muted);
-}
-.sidebar .brand-ai {
-  color: var(--brand-dark-accent);
 }
 .sidebar .account-row {
   border-color: var(--brand-dark-line);

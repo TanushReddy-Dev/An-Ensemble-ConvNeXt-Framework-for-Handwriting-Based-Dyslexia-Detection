@@ -2,7 +2,7 @@
 
 ## Project and current task
 
-NeuroWrite AI is an experimental handwriting screening application. It consists of
+PRISM is an experimental handwriting screening application. It consists of
 a Python/FastAPI inference service, Supabase Auth/PostgreSQL, and an existing React
 frontend. The new frontend is being planned independently in `frontend-new/`.
 

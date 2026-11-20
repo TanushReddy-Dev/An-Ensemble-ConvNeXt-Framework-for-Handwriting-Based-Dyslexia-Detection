@@ -199,14 +199,14 @@ async def screen_handwriting(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Neurowrite AI Compatibility Endpoints (Powering frontend_)
+# Legacy frontend compatibility endpoint
 # ─────────────────────────────────────────────────────────────────────────────
 
-@app.post("/predict", tags=["Neurowrite Frontend"], dependencies=[Depends(require_user)])
+@app.post("/predict", tags=["Legacy Frontend"], dependencies=[Depends(require_user)])
 async def predict_compatibility(
     file: UploadFile = File(..., description="Handwriting image file (PNG, JPG, JPEG)"),
 ) -> Dict[str, Any]:
-    """Compatibility endpoint for Neurowrite AI frontend (runs 5-fold ConvNeXt-Tiny ensemble + IG & GradCAM)."""
+    """Compatibility endpoint for the legacy frontend (runs 5-fold ConvNeXt-Tiny ensemble + IG & GradCAM)."""
     try:
         contents = await file.read()
         pil_img = Image.open(io.BytesIO(contents)).convert("RGB")
@@ -321,8 +321,8 @@ async def generate_screening_report(
         char if char.isalnum() or unicode_category(char).startswith("M") or char in "._-" else "_"
         for char in student_id
     ).strip("._-")[:60]
-    filename = f"NeuroWrite-{safe_id or 'Screening'}.pdf"
-    disposition = f"attachment; filename=\"NeuroWrite-Screening.pdf\"; filename*=UTF-8''{quote(filename, safe='')}"
+    filename = f"PRISM-{safe_id or 'Screening'}.pdf"
+    disposition = f"attachment; filename=\"PRISM-Screening.pdf\"; filename*=UTF-8''{quote(filename, safe='')}"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

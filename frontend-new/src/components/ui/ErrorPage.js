@@ -50,7 +50,7 @@ export default function ErrorPage({ failed = false }) {
     ),
     el("img", {
       className: "workspace-error-art",
-      src: "/assets/brand/neurowrite-mark.webp",
+      src: "/assets/brand/prism-mark.webp",
       alt: "",
       width: 384,
       height: 384,

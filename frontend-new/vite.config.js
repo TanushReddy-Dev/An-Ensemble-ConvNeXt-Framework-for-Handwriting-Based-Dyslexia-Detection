@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     plugins: site
       ? [
           {
-            name: "neurowrite-site-metadata",
+            name: "prism-site-metadata",
             transformIndexHtml(html) {
               return {
                 html: html.replaceAll(

@@ -14,7 +14,7 @@ test("the production landing page enhances cleanly and real routes open", async 
   );
   const mark = page.locator(".nav .brand-mark");
   await expect(mark).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await expect(mark).toHaveCSS("background-image", /neurowrite-symbol\.webp/);
+  await expect(mark).toHaveCSS("background-image", /prism-symbol\.webp/);
   await page
     .getByRole("link", { name: "Sign in", exact: true })
     .first()
@@ -22,7 +22,7 @@ test("the production landing page enhances cleanly and real routes open", async 
   await expect(
     page.getByRole("heading", { name: "Welcome back." }),
   ).toBeVisible();
-  await expect(page).toHaveTitle("Sign in | NeuroWrite AI");
+  await expect(page).toHaveTitle("Sign in | PRISM");
   expect(errors).toEqual([]);
 });
 test("the production overview has useful content with JavaScript disabled", async ({
@@ -54,7 +54,7 @@ test("the production overview has useful content with JavaScript disabled", asyn
     const manifest = await (
       await page.request.get(new URL(manifestPath, page.url()).href)
     ).json();
-    expect(manifest).toMatchObject({ name: "NeuroWrite AI", start_url: "/" });
+    expect(manifest).toMatchObject({ name: "PRISM", start_url: "/" });
     expect(manifest.icons.map(({ sizes }) => sizes)).toEqual([
       "192x192",
       "512x512",
